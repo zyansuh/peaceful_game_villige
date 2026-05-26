@@ -158,13 +158,7 @@ export default function TeacherDetail() {
             </div>
           </div>
 
-          {/* Detail Intro */}
-          {teacher.detail_intro && (
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-white mb-3">상세 소개</h3>
-              <p className="text-gray-300 leading-relaxed">{teacher.detail_intro}</p>
-            </div>
-          )}
+
 
           {/* Message */}
           {teacher.message && (
