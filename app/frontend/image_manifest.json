@@ -110,6 +110,36 @@
       "description": "Valorant game banner card image with purple and red cosmic energy effects. Dark background with swirling red and purple nebula-like energy, a mysterious dark creature or agent silhouette with glowing red eyes, magical ability effects, tactical shooter game aesthetic with dark fantasy elements",
       "style": "photorealistic",
       "filename": "card-valorant-banner.jpg"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizrrkiaagva/mascot-otter-silhouette.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizrrkiaagva/mascot-otter-silhouette.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizrrkiaagva/mascot-otter-silhouette.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "A cute otter silhouette icon, solid dark blue color with subtle cyan glow outline, simple clean shape facing right, minimal detail, gaming mascot style, on transparent background",
+      "style": "minimalist",
+      "filename": "mascot-otter-silhouette.png"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizrq7aaagwa/mascot-lion-silhouette.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizrq7aaagwa/mascot-lion-silhouette.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizrq7aaagwa/mascot-lion-silhouette.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "A fierce lion silhouette icon, solid dark orange color with subtle amber glow outline, simple clean shape with mane visible, facing right, minimal detail, gaming mascot style, on transparent background",
+      "style": "minimalist",
+      "filename": "mascot-lion-silhouette.png"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizrs6qaagwq/mascot-fox-silhouette.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizrs6qaagwq/mascot-fox-silhouette.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizrs6qaagwq/mascot-fox-silhouette.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "A sleek fox silhouette icon, solid dark purple color with subtle pink glow outline, simple clean shape with pointed ears and tail visible, facing right, minimal detail, gaming mascot style, on transparent background",
+      "style": "minimalist",
+      "filename": "mascot-fox-silhouette.png"
     }
   ],
   "success_count": 3,
