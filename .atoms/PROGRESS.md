@@ -22,3 +22,4 @@
 - 2026-05-25: Database tables created (teachers, applications)
 - 2026-05-25: Mock data inserted (9 teachers)
 - 2026-05-25: Images generated (4 images)
+- 2026-05-25: Added urgency UI - blinking 마감임박 badge, progress bars, pulse animations

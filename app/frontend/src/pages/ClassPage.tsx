@@ -82,53 +82,103 @@ export default function ClassPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {teachers.map((teacher) => {
           const isFull = teacher.current_students >= teacher.max_students || teacher.status !== 'recruiting';
+          const remaining = teacher.max_students - teacher.current_students;
+          const isAlmostFull = !isFull && remaining <= 2 && teacher.status === 'recruiting';
+          const fillPercent = Math.min((teacher.current_students / teacher.max_students) * 100, 100);
+
           return (
-            <Card key={teacher.id} className={`bg-gray-900 border-gray-800 hover:border-gray-600 transition-all duration-200 ${isFull ? 'opacity-70' : ''}`}>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center text-2xl">
-                    👨‍🏫
+            <Card key={teacher.id} className={`bg-gray-900 border-gray-800 hover:border-gray-600 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${isFull ? 'opacity-70' : ''} ${isAlmostFull ? 'border-red-500/50 shadow-red-500/10 shadow-lg' : ''}`}>
+              <CardContent className="p-6 relative overflow-hidden">
+                {/* Almost full pulse background effect */}
+                {isAlmostFull && (
+                  <div className="absolute inset-0 bg-red-500/5 animate-pulse pointer-events-none" />
+                )}
+
+                <div className="relative z-10">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className={`w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center text-2xl shrink-0 ${isAlmostFull ? 'ring-2 ring-red-500/50 animate-pulse' : ''}`}>
+                      👨‍🏫
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-bold text-white truncate">{teacher.nickname}</h3>
+                        {isAlmostFull && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-500 text-white animate-[blink_1s_ease-in-out_infinite] shrink-0">
+                            🔥 마감 임박!
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-400">{teacher.position} · {teacher.tier}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white">{teacher.nickname}</h3>
-                    <p className="text-sm text-gray-400">{teacher.position} · {teacher.tier}</p>
+
+                  <p className="text-gray-300 text-sm mb-4 line-clamp-2">{teacher.intro}</p>
+
+                  {/* Progress Bar */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs text-gray-400">인원 현황</span>
+                      <span className="text-xs font-medium">
+                        <span className={isFull ? 'text-red-400' : isAlmostFull ? 'text-orange-400' : 'text-green-400'}>
+                          {teacher.current_students}
+                        </span>
+                        <span className="text-gray-500"> / {teacher.max_students}명</span>
+                      </span>
+                    </div>
+                    <div className="w-full h-2.5 bg-gray-800 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          isFull
+                            ? 'bg-red-500'
+                            : isAlmostFull
+                            ? 'bg-gradient-to-r from-orange-500 to-red-500 animate-pulse'
+                            : 'bg-gradient-to-r from-green-500 to-emerald-400'
+                        }`}
+                        style={{ width: `${fillPercent}%` }}
+                      />
+                    </div>
+                    {isAlmostFull && (
+                      <p className="text-xs text-red-400 mt-1 animate-pulse font-medium">
+                        ⚡ 남은 자리 {remaining}명! 서두르세요!
+                      </p>
+                    )}
                   </div>
-                </div>
 
-                <p className="text-gray-300 text-sm mb-4 line-clamp-2">{teacher.intro}</p>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      {teacher.status === 'recruiting' && !isFull && !isAlmostFull && (
+                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">모집중</Badge>
+                      )}
+                      {isAlmostFull && (
+                        <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 animate-pulse">마감 임박</Badge>
+                      )}
+                      {(teacher.status === 'closed' || isFull) && (
+                        <Badge className="bg-red-500/20 text-red-400 border-red-500/30">마감</Badge>
+                      )}
+                      {teacher.status === 'resting' && (
+                        <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">휴식중</Badge>
+                      )}
+                    </div>
+                  </div>
 
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm text-gray-400">
-                    현재 인원: <span className={isFull ? 'text-red-400' : 'text-green-400'}>{teacher.current_students}</span> / {teacher.max_students}
-                  </span>
-                  {teacher.status === 'recruiting' && !isFull && (
-                    <Badge className="bg-green-500/20 text-green-400 border-green-500/30">모집중</Badge>
-                  )}
-                  {teacher.status === 'closed' || isFull ? (
-                    <Badge className="bg-red-500/20 text-red-400 border-red-500/30">마감</Badge>
-                  ) : null}
-                  {teacher.status === 'resting' && (
-                    <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">휴식중</Badge>
-                  )}
-                </div>
-
-                <div className="flex gap-2">
-                  <Link to={`/teacher/${teacher.id}`} className="flex-1">
-                    <Button variant="outline" className="w-full border-gray-700 text-gray-300 hover:bg-gray-800">
-                      상세보기
-                    </Button>
-                  </Link>
-                  {isFull ? (
-                    <Button disabled className="flex-1 bg-gray-700 text-gray-500 cursor-not-allowed">
-                      선택불가
-                    </Button>
-                  ) : (
-                    <Link to={`/apply/${teacher.id}`} className="flex-1">
-                      <Button className={`w-full bg-gradient-to-r ${info.gradient} text-white border-0 hover:opacity-90`}>
-                        선택하기
+                  <div className="flex gap-2">
+                    <Link to={`/teacher/${teacher.id}`} className="flex-1">
+                      <Button variant="outline" className="w-full border-gray-700 text-gray-300 hover:bg-gray-800">
+                        상세보기
                       </Button>
                     </Link>
-                  )}
+                    {isFull ? (
+                      <Button disabled className="flex-1 bg-gray-700 text-gray-500 cursor-not-allowed">
+                        선택불가
+                      </Button>
+                    ) : (
+                      <Link to={`/apply/${teacher.id}`} className="flex-1">
+                        <Button className={`w-full bg-gradient-to-r ${info.gradient} text-white border-0 hover:opacity-90 ${isAlmostFull ? 'animate-[pulse_2s_ease-in-out_infinite]' : ''}`}>
+                          {isAlmostFull ? '🔥 지금 선택!' : '선택하기'}
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
