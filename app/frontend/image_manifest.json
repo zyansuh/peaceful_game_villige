@@ -140,9 +140,19 @@
       "description": "A sleek fox silhouette icon, solid dark purple color with subtle pink glow outline, simple clean shape with pointed ears and tail visible, facing right, minimal detail, gaming mascot style, on transparent background",
       "style": "minimalist",
       "filename": "mascot-fox-silhouette.png"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-26/piz7ebaaagxa/card-valorant-fox-banner.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-26/piz7ebaaagxa/card-valorant-fox-banner.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-26/piz7ebaaagxa/card-valorant-fox-banner.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "A stylish gaming banner featuring a sleek fox silhouette mascot combined with the Valorant game aesthetic. The fox is in a dynamic pose with purple and red neon glow effects. The Valorant 'V' logo mark is subtly integrated into the background with glowing purple energy lines. The text 'VALORANT' is elegantly placed at the bottom in a clean gaming font style. Dark background with purple and magenta color scheme, cyberpunk gaming atmosphere, neon accents",
+      "style": "minimalist",
+      "filename": "card-valorant-fox-banner.png"
     }
   ],
-  "success_count": 3,
+  "success_count": 1,
   "failed_count": 0,
-  "message": "Generated 3/3 images"
+  "message": "Generated 1/1 images"
 }

@@ -39,7 +39,7 @@ const classes = [
     borderColor: 'border-purple-500/50',
     hoverBorder: 'hover:border-purple-400',
     bgGlow: 'hover:shadow-purple-500/20',
-    bannerImage: 'https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizmhxaaagxa/card-valorant-banner.png',
+    bannerImage: 'https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-26/piz7ebaaagxa/card-valorant-fox-banner.png',
     mascotImage: 'https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizrs6qaagwq/mascot-fox-silhouette.png',
     description: '정밀한 에임과 전략, 발로란트 에이전트!',
     linkColor: 'text-purple-400 hover:text-purple-300',
