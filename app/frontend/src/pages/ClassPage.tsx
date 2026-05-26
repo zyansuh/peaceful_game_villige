@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { X } from 'lucide-react';
 import client from '@/lib/client';
 
 interface Teacher {
@@ -23,10 +25,17 @@ const classInfo: Record<string, { name: string; gameKr: string; color: string; g
   valorant: { name: '여우반', gameKr: '발로란트', color: 'text-purple-400', gradient: 'from-purple-500 to-pink-400' },
 };
 
+type SortOption = 'remaining' | 'name';
+
 export default function ClassPage() {
   const { classId } = useParams<{ classId: string }>();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Filter & Sort state
+  const [positionFilter, setPositionFilter] = useState<string | null>(null);
+  const [tierFilter, setTierFilter] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<SortOption>('remaining');
 
   const info = classInfo[classId || ''] || classInfo.overwatch;
 
@@ -49,7 +58,50 @@ export default function ClassPage() {
     fetchTeachers();
   }, [classId]);
 
+  // Extract unique positions and tiers for filter options
+  const positions = useMemo(() => {
+    const set = new Set(teachers.map(t => t.position).filter(Boolean));
+    return Array.from(set);
+  }, [teachers]);
+
+  const tiers = useMemo(() => {
+    const set = new Set(teachers.map(t => t.tier).filter(Boolean));
+    return Array.from(set);
+  }, [teachers]);
+
+  // Filtered and sorted teachers
+  const filteredTeachers = useMemo(() => {
+    let result = [...teachers];
+
+    if (positionFilter) {
+      result = result.filter(t => t.position === positionFilter);
+    }
+    if (tierFilter) {
+      result = result.filter(t => t.tier === tierFilter);
+    }
+
+    if (sortBy === 'remaining') {
+      result.sort((a, b) => {
+        const remainA = a.max_students - a.current_students;
+        const remainB = b.max_students - b.current_students;
+        return remainA - remainB; // fewer remaining first (urgency)
+      });
+    } else if (sortBy === 'name') {
+      result.sort((a, b) => a.nickname.localeCompare(b.nickname, 'ko'));
+    }
+
+    return result;
+  }, [teachers, positionFilter, tierFilter, sortBy]);
+
   const availableCount = teachers.filter(t => t.status === 'recruiting').reduce((sum, t) => sum + (t.max_students - t.current_students), 0);
+
+  const activeFilters: { label: string; onRemove: () => void }[] = [];
+  if (positionFilter) {
+    activeFilters.push({ label: `포지션: ${positionFilter}`, onRemove: () => setPositionFilter(null) });
+  }
+  if (tierFilter) {
+    activeFilters.push({ label: `티어: ${tierFilter}`, onRemove: () => setTierFilter(null) });
+  }
 
   if (loading) {
     return (
@@ -62,7 +114,7 @@ export default function ClassPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <Link to="/" className="text-gray-400 hover:text-white text-sm mb-4 inline-block">
           ← 메인으로 돌아가기
         </Link>
@@ -78,9 +130,73 @@ export default function ClassPage() {
         </div>
       </div>
 
+      {/* Filters & Sort */}
+      <div className="mb-6 space-y-3">
+        <div className="flex flex-wrap gap-3">
+          <Select value={positionFilter || ''} onValueChange={(v) => setPositionFilter(v || null)}>
+            <SelectTrigger className="w-40 bg-gray-900 border-gray-700 text-gray-300">
+              <SelectValue placeholder="포지션 필터" />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-900 border-gray-700">
+              {positions.map((pos) => (
+                <SelectItem key={pos} value={pos}>{pos}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={tierFilter || ''} onValueChange={(v) => setTierFilter(v || null)}>
+            <SelectTrigger className="w-40 bg-gray-900 border-gray-700 text-gray-300">
+              <SelectValue placeholder="티어 필터" />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-900 border-gray-700">
+              {tiers.map((tier) => (
+                <SelectItem key={tier} value={tier}>{tier}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+            <SelectTrigger className="w-44 bg-gray-900 border-gray-700 text-gray-300">
+              <SelectValue placeholder="정렬" />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-900 border-gray-700">
+              <SelectItem value="remaining">남은 자리순</SelectItem>
+              <SelectItem value="name">이름순</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Active Filter Badges */}
+        {activeFilters.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {activeFilters.map((filter) => (
+              <button
+                key={filter.label}
+                onClick={filter.onRemove}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-800 border border-gray-600 text-sm text-gray-200 hover:bg-gray-700 hover:border-gray-500 transition-colors"
+              >
+                {filter.label}
+                <X className="w-3.5 h-3.5 text-gray-400" />
+              </button>
+            ))}
+            <button
+              onClick={() => { setPositionFilter(null); setTierFilter(null); }}
+              className="inline-flex items-center px-3 py-1 rounded-full text-sm text-red-400 hover:text-red-300 transition-colors"
+            >
+              전체 해제
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Teacher Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {teachers.map((teacher) => {
+        {filteredTeachers.length === 0 && (
+          <div className="col-span-full text-center py-12">
+            <p className="text-gray-400">조건에 맞는 선생님이 없습니다.</p>
+          </div>
+        )}
+        {filteredTeachers.map((teacher) => {
           const isFull = teacher.current_students >= teacher.max_students || teacher.status !== 'recruiting';
           const remaining = teacher.max_students - teacher.current_students;
           const isAlmostFull = !isFull && remaining <= 2 && teacher.status === 'recruiting';
