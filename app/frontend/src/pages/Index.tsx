@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 const classes = [
@@ -9,11 +9,12 @@ const classes = [
     game: 'Overwatch',
     gameKr: '오버워치',
     color: 'from-blue-500 to-cyan-400',
-    borderColor: 'border-blue-500/30',
+    borderColor: 'border-blue-500/40',
     hoverBorder: 'hover:border-blue-400',
-    bgGlow: 'hover:shadow-blue-500/20',
-    image: 'https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piwwhpqaagxa/mascot-otter-blue.png',
+    bgGlow: 'hover:shadow-blue-500/30',
+    bgImage: 'https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piy5fmiaagva/class-bg-otter-blue-silhouette.png',
     description: '오버워치와 함께하는 팀워크의 세계',
+    accent: 'blue',
   },
   {
     id: 'pubg',
@@ -21,11 +22,12 @@ const classes = [
     game: 'PUBG: Battlegrounds',
     gameKr: '배틀그라운드',
     color: 'from-orange-500 to-amber-400',
-    borderColor: 'border-orange-500/30',
+    borderColor: 'border-orange-500/40',
     hoverBorder: 'hover:border-orange-400',
-    bgGlow: 'hover:shadow-orange-500/20',
-    image: 'https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piwwd5iaagvq/mascot-lion-orange.png',
+    bgGlow: 'hover:shadow-orange-500/30',
+    bgImage: 'https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piy5g2yaagwq/class-bg-lion-orange-silhouette.png',
     description: '배틀그라운드 생존의 법칙을 배우자',
+    accent: 'orange',
   },
   {
     id: 'valorant',
@@ -33,11 +35,12 @@ const classes = [
     game: 'Valorant',
     gameKr: '발로란트',
     color: 'from-purple-500 to-pink-400',
-    borderColor: 'border-purple-500/30',
+    borderColor: 'border-purple-500/40',
     hoverBorder: 'hover:border-purple-400',
-    bgGlow: 'hover:shadow-purple-500/20',
-    image: 'https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piwwdsqaagwa/mascot-fox-redpurple.png',
+    bgGlow: 'hover:shadow-purple-500/30',
+    bgImage: 'https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piy5jkaaagvq/class-bg-fox-purple-silhouette.png',
     description: '발로란트 전략과 에임의 조화',
+    accent: 'purple',
   },
 ];
 
@@ -53,28 +56,49 @@ export default function Index() {
         <p className="text-gray-500">원하는 반을 선택하고, 나에게 맞는 선생님을 찾아보세요!</p>
       </div>
 
-      {/* Class Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+      {/* Class Cards - Large background style */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
         {classes.map((cls) => (
-          <Link key={cls.id} to={`/class/${cls.id}`}>
-            <Card className={`bg-gray-900 border ${cls.borderColor} ${cls.hoverBorder} transition-all duration-300 hover:shadow-xl ${cls.bgGlow} hover:-translate-y-2 cursor-pointer group overflow-hidden`}>
-              <CardContent className="p-6 flex flex-col items-center text-center">
-                <div className="w-32 h-32 mb-4 relative">
-                  <img
-                    src={cls.image}
-                    alt={cls.name}
-                    className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
-                  />
+          <Link key={cls.id} to={`/class/${cls.id}`} className="block">
+            <Card
+              className={`relative overflow-hidden border-2 ${cls.borderColor} ${cls.hoverBorder} transition-all duration-500 hover:shadow-2xl ${cls.bgGlow} hover:-translate-y-3 cursor-pointer group h-[320px] md:h-[380px]`}
+            >
+              {/* Background Image */}
+              <div className="absolute inset-0">
+                <img
+                  src={cls.bgImage}
+                  alt={cls.name}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                {/* Dark overlay gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/20 group-hover:from-black/80 group-hover:via-black/30 transition-all duration-500" />
+              </div>
+
+              {/* Content overlay */}
+              <div className="relative z-10 h-full flex flex-col justify-end p-6">
+                {/* Game badge */}
+                <div className="mb-auto pt-2">
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${cls.color} text-white shadow-lg`}>
+                    {cls.gameKr}
+                  </span>
                 </div>
-                <h2 className={`text-2xl font-bold mb-1 bg-gradient-to-r ${cls.color} bg-clip-text text-transparent`}>
-                  {cls.name}
-                </h2>
-                <p className="text-gray-400 text-sm mb-2">{cls.gameKr}</p>
-                <p className="text-gray-500 text-xs mb-4">{cls.description}</p>
-                <Button className={`w-full bg-gradient-to-r ${cls.color} text-white border-0 hover:opacity-90`}>
-                  입장하기
-                </Button>
-              </CardContent>
+
+                {/* Title and description */}
+                <div>
+                  <h2 className={`text-3xl md:text-4xl font-extrabold mb-2 bg-gradient-to-r ${cls.color} bg-clip-text text-transparent drop-shadow-lg`}>
+                    {cls.name}
+                  </h2>
+                  <p className="text-gray-300 text-sm mb-4">{cls.description}</p>
+                  <Button
+                    className={`w-full bg-gradient-to-r ${cls.color} text-white border-0 hover:opacity-90 shadow-lg transition-all duration-300 group-hover:shadow-xl`}
+                  >
+                    입장하기
+                  </Button>
+                </div>
+              </div>
+
+              {/* Hover glow effect */}
+              <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none bg-gradient-to-t ${cls.color} mix-blend-overlay`} />
             </Card>
           </Link>
         ))}
@@ -83,14 +107,14 @@ export default function Index() {
       {/* Notice */}
       <div className="mt-16 max-w-2xl mx-auto">
         <Card className="bg-gray-900/50 border-gray-800">
-          <CardContent className="p-6">
+          <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-200 mb-2">📢 공지사항</h3>
             <ul className="text-gray-400 text-sm space-y-1">
               <li>• 신입 배정은 선착순으로 진행됩니다.</li>
               <li>• 정원이 마감된 선생님은 선택할 수 없습니다.</li>
               <li>• 신청 후 관리자 확인까지 1~2일 소요됩니다.</li>
             </ul>
-          </CardContent>
+          </div>
         </Card>
       </div>
     </div>

@@ -1,22 +1,58 @@
-[
-  {
-    "filename": "mascot-otter-blue.png",
-    "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piwwhpqaagxa/mascot-otter-blue.png",
-    "description": "Otter mascot for 수달반 (Overwatch)"
-  },
-  {
-    "filename": "mascot-lion-orange.png",
-    "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piwwd5iaagvq/mascot-lion-orange.png",
-    "description": "Lion mascot for 사자반 (PUBG)"
-  },
-  {
-    "filename": "mascot-fox-redpurple.png",
-    "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piwwdsqaagwa/mascot-fox-redpurple.png",
-    "description": "Fox mascot for 여우반 (Valorant)"
-  },
-  {
-    "filename": "logo-peaceful-gaming-village.png",
-    "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piwwehqaagxq/logo-peaceful-gaming-village.png",
-    "description": "Logo for 평화로운게임마을"
-  }
-]
+{
+  "status": "success",
+  "results": [
+    {
+      "filename": "mascot-otter-blue.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piwwhpqaagxa/mascot-otter-blue.png",
+      "description": "Otter mascot for 수달반 (Overwatch)"
+    },
+    {
+      "filename": "mascot-lion-orange.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piwwd5iaagvq/mascot-lion-orange.png",
+      "description": "Lion mascot for 사자반 (PUBG)"
+    },
+    {
+      "filename": "mascot-fox-redpurple.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piwwdsqaagwa/mascot-fox-redpurple.png",
+      "description": "Fox mascot for 여우반 (Valorant)"
+    },
+    {
+      "filename": "logo-peaceful-gaming-village.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piwwehqaagxq/logo-peaceful-gaming-village.png",
+      "description": "Logo for 평화로운게임마을"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piy5fmiaagva/class-bg-otter-blue-silhouette.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piy5fmiaagva/class-bg-otter-blue-silhouette.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piy5fmiaagva/class-bg-otter-blue-silhouette.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "Dark gaming-themed wide banner background for an otter class. Deep blue and cyan gradient background with a large stylized otter silhouette in the center, glowing neon blue edges on the silhouette, subtle digital grid pattern, atmospheric fog effects, gaming aesthetic with futuristic vibes",
+      "style": "photorealistic",
+      "filename": "class-bg-otter-blue-silhouette.jpg"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piy5g2yaagwq/class-bg-lion-orange-silhouette.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piy5g2yaagwq/class-bg-lion-orange-silhouette.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piy5g2yaagwq/class-bg-lion-orange-silhouette.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "Dark gaming-themed wide banner background for a lion class. Deep orange and amber gradient background with a large majestic lion silhouette in the center, glowing neon orange edges on the silhouette, subtle digital grid pattern, atmospheric smoke effects, fierce and powerful gaming aesthetic",
+      "style": "photorealistic",
+      "filename": "class-bg-lion-orange-silhouette.jpg"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piy5jkaaagvq/class-bg-fox-purple-silhouette.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piy5jkaaagvq/class-bg-fox-purple-silhouette.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/piy5jkaaagvq/class-bg-fox-purple-silhouette.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "Dark gaming-themed wide banner background for a fox class. Deep purple and pink gradient background with a large elegant fox silhouette in the center, glowing neon purple edges on the silhouette, subtle digital grid pattern, atmospheric mist effects, sleek and strategic gaming aesthetic",
+      "style": "photorealistic",
+      "filename": "class-bg-fox-purple-silhouette.jpg"
+    }
+  ],
+  "success_count": 3,
+  "failed_count": 0,
+  "message": "Generated 3/3 images"
+}
