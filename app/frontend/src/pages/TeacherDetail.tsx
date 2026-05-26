@@ -47,11 +47,8 @@ export default function TeacherDetail() {
   const [user, setUser] = useState<any>(null);
 
   // Review form state
-  const [reviewRating, setReviewRating] = useState(5);
   const [reviewContent, setReviewContent] = useState('');
-  const [reviewNickname, setReviewNickname] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [hoverRating, setHoverRating] = useState(0);
 
   const fetchTeacher = useCallback(async () => {
     try {
@@ -127,7 +124,9 @@ export default function TeacherDetail() {
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!reviewContent.trim() || !reviewNickname.trim()) return;
+    if (!reviewContent.trim()) return;
+
+    const userEmail = user?.email || user?.username || '익명';
 
     try {
       setSubmitting(true);
@@ -136,15 +135,13 @@ export default function TeacherDetail() {
           teacher_id: String(teacherId),
           teacher_name: teacher?.nickname || '',
           class_name: teacher?.class_name || '',
-          rating: reviewRating,
+          rating: 5,
           content: reviewContent.trim(),
-          nickname: reviewNickname.trim(),
+          nickname: userEmail,
         },
       });
       // Reset form and refresh reviews
-      setReviewRating(5);
       setReviewContent('');
-      setReviewNickname('');
       await fetchReviews();
     } catch (err) {
       console.error('Failed to submit review:', err);
@@ -153,46 +150,11 @@ export default function TeacherDetail() {
     }
   };
 
-  const averageRating = reviews.length > 0
-    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-    : 0;
-
   const getClassColor = (className: string) => {
     if (className === '수달반') return '#3B82F6';
     if (className === '사자반') return '#F97316';
     if (className === '여우반') return '#8B5CF6';
     return '#3B82F6';
-  };
-
-  const renderStars = (rating: number, size: 'sm' | 'md' | 'lg' = 'md') => {
-    const sizeClass = size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-2xl' : 'text-lg';
-    return (
-      <span className={`${sizeClass} inline-flex gap-0.5`}>
-        {[1, 2, 3, 4, 5].map((star) => (
-          <span key={star} className={star <= rating ? 'text-yellow-400' : 'text-gray-600'}>
-            ★
-          </span>
-        ))}
-      </span>
-    );
-  };
-
-  const renderInteractiveStars = () => {
-    return (
-      <span className="text-2xl inline-flex gap-0.5 cursor-pointer">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <span
-            key={star}
-            className={`transition-colors ${star <= (hoverRating || reviewRating) ? 'text-yellow-400' : 'text-gray-600'} hover:scale-110`}
-            onClick={() => setReviewRating(star)}
-            onMouseEnter={() => setHoverRating(star)}
-            onMouseLeave={() => setHoverRating(0)}
-          >
-            ★
-          </span>
-        ))}
-      </span>
-    );
   };
 
   const formatDate = (dateStr: string) => {
@@ -321,44 +283,25 @@ export default function TeacherDetail() {
         <CardContent className="p-8">
           {/* Reviews Header */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-white">리뷰</h2>
-            <div className="flex items-center gap-3">
-              {reviews.length > 0 && (
-                <>
-                  {renderStars(Math.round(averageRating), 'md')}
-                  <span className="text-white font-semibold">{averageRating.toFixed(1)}</span>
-                  <span className="text-gray-400 text-sm">({reviews.length}개)</span>
-                </>
-              )}
-            </div>
+            <h2 className="text-xl font-bold text-white">댓글</h2>
+            {reviews.length > 0 && (
+              <span className="text-gray-400 text-sm">{reviews.length}개</span>
+            )}
           </div>
 
           {/* Review Form */}
           {user ? (
             <form onSubmit={handleSubmitReview} className="mb-8 p-5 rounded-lg border border-gray-700 bg-gray-800/50">
-              <h3 className="text-white font-semibold mb-4">리뷰 작성</h3>
-              <div className="mb-4">
-                <label className="text-gray-400 text-sm block mb-1">별점</label>
-                {renderInteractiveStars()}
+              <h3 className="text-white font-semibold mb-4">댓글 작성</h3>
+              <div className="mb-2">
+                <span className="text-gray-400 text-sm">작성자: </span>
+                <span className="text-blue-400 text-sm font-medium">{user?.email || user?.username || '사용자'}</span>
               </div>
               <div className="mb-4">
-                <label className="text-gray-400 text-sm block mb-1">닉네임</label>
-                <input
-                  type="text"
-                  value={reviewNickname}
-                  onChange={(e) => setReviewNickname(e.target.value)}
-                  placeholder="닉네임을 입력하세요"
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
-                  maxLength={20}
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="text-gray-400 text-sm block mb-1">내용</label>
                 <textarea
                   value={reviewContent}
                   onChange={(e) => setReviewContent(e.target.value)}
-                  placeholder="선생님에 대한 리뷰를 작성해주세요"
+                  placeholder="댓글을 작성해주세요"
                   className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors resize-none"
                   rows={3}
                   maxLength={500}
@@ -367,11 +310,11 @@ export default function TeacherDetail() {
               </div>
               <Button
                 type="submit"
-                disabled={submitting || !reviewContent.trim() || !reviewNickname.trim()}
+                disabled={submitting || !reviewContent.trim()}
                 className="text-white border-0"
                 style={{ backgroundColor: classColor }}
               >
-                {submitting ? '등록 중...' : '리뷰 등록'}
+                {submitting ? '등록 중...' : '댓글 등록'}
               </Button>
             </form>
           ) : (
@@ -396,10 +339,7 @@ export default function TeacherDetail() {
               {reviews.map((review) => (
                 <div key={review.id} className="p-4 rounded-lg bg-gray-800/40 border border-gray-700/50">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <span className="text-white font-medium">{review.nickname || '익명'}</span>
-                      {renderStars(review.rating, 'sm')}
-                    </div>
+                    <span className="text-blue-400 font-medium text-sm">{review.nickname || '익명'}</span>
                     <span className="text-gray-500 text-xs">{formatDate(review.created_at)}</span>
                   </div>
                   <p className="text-gray-300 text-sm leading-relaxed">{review.content}</p>
