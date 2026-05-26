@@ -2,6 +2,7 @@ import { ReactNode, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import client from '@/lib/client';
+import SpaceBackground from '@/components/SpaceBackground';
 
 interface LayoutProps {
   children: ReactNode;
@@ -36,8 +37,9 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <header className="sticky top-0 z-50 border-b border-gray-800 bg-gray-950/95 backdrop-blur">
+    <div className="min-h-screen bg-gray-950 text-white relative">
+      <SpaceBackground />
+      <header className="sticky top-0 z-50 border-b border-gray-800 bg-gray-950/80 backdrop-blur-md">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link to="/" className="flex items-center gap-3">
             <img
@@ -70,15 +72,22 @@ export default function Layout({ children }: LayoutProps) {
                 로그아웃
               </Button>
             ) : (
-              <Button onClick={handleLogin} size="sm" className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0">
-                로그인
-              </Button>
+              <>
+                <Link to="/signup">
+                  <Button variant="outline" size="sm" className="border-gray-700 text-gray-300 hover:bg-gray-800">
+                    회원가입
+                  </Button>
+                </Link>
+                <Button onClick={handleLogin} size="sm" className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0">
+                  로그인
+                </Button>
+              </>
             )}
           </div>
         </div>
       </header>
 
-      <main>{children}</main>
+      <main className="relative z-10">{children}</main>
     </div>
   );
 }

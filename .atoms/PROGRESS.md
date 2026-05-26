@@ -28,3 +28,4 @@
 - 2026-05-26: Updated ClassPage and TeacherDetail to show 성별/출생년도/MBTI/게임유형/소개/인원현황 format
 - 2026-05-26: Backend logic added - application creation now increments teacher's current_students and auto-closes when full
 - 2026-05-26: Added admin activity logging - admin_logs table + logging on teacher CRUD + dashboard activity feed
+- 2026-05-26: Added signup page with 4-digit numeric password validation + backend member registration endpoint

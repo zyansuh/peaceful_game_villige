@@ -1,0 +1,23 @@
+{
+    "title": "members",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "username": {
+            "type": "string",
+            "description": "Gaming community username, unique"
+        },
+        "password": {
+            "type": "string",
+            "description": "4-digit numeric password"
+        }
+    },
+    "required": [
+        "id",
+        "username",
+        "password"
+    ]
+}

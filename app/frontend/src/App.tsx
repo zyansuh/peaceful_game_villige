@@ -10,6 +10,8 @@ import Dashboard from "./pages/admin/Dashboard";
 import AdminApplications from "./pages/admin/AdminApplications";
 import AdminTeachers from "./pages/admin/AdminTeachers";
 import AuthCallback from "./pages/AuthCallback";
+import Signup from "./pages/Signup";
+import SignupComplete from "./pages/SignupComplete";
 
 function App() {
   return (
@@ -26,6 +28,8 @@ function App() {
           <Route path="/admin/applications" element={<AdminApplications />} />
           <Route path="/admin/teachers" element={<AdminTeachers />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/signup-complete" element={<SignupComplete />} />
         </Routes>
       </Layout>
     </BrowserRouter>
