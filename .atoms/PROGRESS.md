@@ -27,3 +27,4 @@
 - 2026-05-26: Deleted old PUBG teachers (달안 dup, 비니코코 dup, 쿠잉, 뚜비, 쫑이) and inserted 7 new PUBG teachers
 - 2026-05-26: Updated ClassPage and TeacherDetail to show 성별/출생년도/MBTI/게임유형/소개/인원현황 format
 - 2026-05-26: Backend logic added - application creation now increments teacher's current_students and auto-closes when full
+- 2026-05-26: Added admin activity logging - admin_logs table + logging on teacher CRUD + dashboard activity feed

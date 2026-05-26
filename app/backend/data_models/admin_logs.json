@@ -1,0 +1,40 @@
+{
+    "title": "admin_logs",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "action": {
+            "type": "string",
+            "description": "Action type: add, edit, delete"
+        },
+        "target_type": {
+            "type": "string",
+            "description": "Target type: teacher"
+        },
+        "target_name": {
+            "type": "string",
+            "description": "Name of the target (teacher name)"
+        },
+        "target_class": {
+            "type": "string",
+            "description": "Class name: 수달반, 사자반, 여우반"
+        },
+        "details": {
+            "type": "string",
+            "description": "Additional details about the action"
+        },
+        "admin_email": {
+            "type": "string",
+            "description": "Email of the admin who performed the action"
+        }
+    },
+    "required": [
+        "id",
+        "action",
+        "target_type",
+        "target_name"
+    ]
+}

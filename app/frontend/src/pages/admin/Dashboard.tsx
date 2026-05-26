@@ -5,6 +5,40 @@ import { Button } from '@/components/ui/button';
 import AdminPasswordGate from '@/components/AdminPasswordGate';
 import client from '@/lib/client';
 
+interface AdminLog {
+  id: number;
+  action: string;
+  target_type: string;
+  target_name: string;
+  target_class: string;
+  details: string;
+  admin_email: string;
+  created_at: string;
+}
+
+function getActionIcon(action: string): string {
+  switch (action) {
+    case 'add': return '➕';
+    case 'edit': return '✏️';
+    case 'delete': return '🗑️';
+    default: return '📝';
+  }
+}
+
+function getRelativeTime(dateStr: string): string {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return '방금 전';
+  if (diffMin < 60) return `${diffMin}분 전`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}시간 전`;
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay < 7) return `${diffDay}일 전`;
+  return date.toLocaleDateString('ko-KR');
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState({
@@ -14,6 +48,7 @@ export default function Dashboard() {
     foxCount: 0,
     remainingSlots: 0,
   });
+  const [logs, setLogs] = useState<AdminLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,6 +80,10 @@ export default function Dashboard() {
           foxCount: apps.filter((a: any) => a.class_name === '여우반').length,
           remainingSlots: remaining,
         });
+
+        // Fetch admin logs
+        const logsRes = await client.entities.admin_logs.query({ query: {}, sort: '-created_at', limit: 10 });
+        setLogs(logsRes?.data?.items || []);
       } catch (err) {
         console.error('Failed to load dashboard:', err);
         navigate('/');
@@ -113,7 +152,7 @@ export default function Dashboard() {
         </div>
 
         {/* Navigation */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <Link to="/admin/applications">
             <Card className="bg-gray-900 border-gray-800 hover:border-gray-600 transition-colors cursor-pointer">
               <CardContent className="p-6">
@@ -130,6 +169,40 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </Link>
+        </div>
+
+        {/* Recent Activity */}
+        <div>
+          <h2 className="text-xl font-bold text-white mb-4">📜 최근 활동 내역</h2>
+          <Card className="bg-gray-900 border-gray-800">
+            <CardContent className="p-6">
+              {logs.length === 0 ? (
+                <p className="text-gray-500 text-center py-4">활동 내역이 없습니다</p>
+              ) : (
+                <div className="space-y-3">
+                  {logs.map((log) => (
+                    <div
+                      key={log.id}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-gray-800/50 border border-gray-700/50"
+                    >
+                      <span className="text-xl flex-shrink-0">{getActionIcon(log.action)}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-white truncate">
+                          <span className="font-semibold">{log.target_name}</span>
+                          <span className="text-gray-400 ml-2">({log.target_class})</span>
+                        </p>
+                        <p className="text-xs text-gray-500">{log.details}</p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-xs text-gray-500">{getRelativeTime(log.created_at)}</p>
+                        <p className="text-xs text-gray-600 truncate max-w-[120px]">{log.admin_email}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </AdminPasswordGate>

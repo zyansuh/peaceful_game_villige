@@ -88,6 +88,7 @@ export default function AdminTeachers() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<TeacherForm>(defaultForm);
   const [classFilter, setClassFilter] = useState<ClassFilter>('전체');
+  const [adminEmail, setAdminEmail] = useState<string>('admin');
 
   useEffect(() => {
     const init = async () => {
@@ -97,6 +98,7 @@ export default function AdminTeachers() {
           client.auth.toLogin();
           return;
         }
+        setAdminEmail(userRes.data.email || 'admin');
         await fetchTeachers();
       } catch (err) {
         console.error('Failed to load:', err);
@@ -134,10 +136,31 @@ export default function AdminTeachers() {
         active_time: '',
       };
 
+      const className = categoryToClass[form.game_category] || '수달반';
       if (editingId) {
         await client.entities.teachers.update({ id: String(editingId), data });
+        await client.entities.admin_logs.create({
+          data: {
+            action: 'edit',
+            target_type: 'teacher',
+            target_name: form.nickname,
+            target_class: className,
+            details: '선생님 정보 수정',
+            admin_email: adminEmail,
+          },
+        });
       } else {
         await client.entities.teachers.create({ data });
+        await client.entities.admin_logs.create({
+          data: {
+            action: 'add',
+            target_type: 'teacher',
+            target_name: form.nickname,
+            target_class: className,
+            details: '새 선생님 추가',
+            admin_email: adminEmail,
+          },
+        });
       }
       await fetchTeachers();
       setShowForm(false);
@@ -171,7 +194,20 @@ export default function AdminTeachers() {
 
   const handleDelete = async (teacherId: number) => {
     try {
+      const teacher = teachers.find(t => t.id === teacherId);
       await client.entities.teachers.delete({ id: String(teacherId) });
+      if (teacher) {
+        await client.entities.admin_logs.create({
+          data: {
+            action: 'delete',
+            target_type: 'teacher',
+            target_name: teacher.nickname,
+            target_class: teacher.class_name,
+            details: '선생님 삭제',
+            admin_email: adminEmail,
+          },
+        });
+      }
       setTeachers(prev => prev.filter(t => t.id !== teacherId));
     } catch (err) {
       console.error('Failed to delete teacher:', err);
