@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,21 +30,41 @@ export default function TeacherDetail() {
   const [teacher, setTeacher] = useState<Teacher | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchTeacher = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await client.entities.teachers.get({ id: teacherId || '' });
+      if (res?.data) {
+        setTeacher(res.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch teacher:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [teacherId]);
+
   useEffect(() => {
-    const fetchTeacher = async () => {
-      try {
-        const res = await client.entities.teachers.get({ id: teacherId || '' });
-        if (res?.data) {
-          setTeacher(res.data);
-        }
-      } catch (err) {
-        console.error('Failed to fetch teacher:', err);
-      } finally {
-        setLoading(false);
+    fetchTeacher();
+  }, [fetchTeacher]);
+
+  // Re-fetch data when page becomes visible (e.g., user navigates back after applying)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchTeacher();
       }
     };
-    fetchTeacher();
-  }, [teacherId]);
+    const handleFocus = () => {
+      fetchTeacher();
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [fetchTeacher]);
 
   if (loading) {
     return (

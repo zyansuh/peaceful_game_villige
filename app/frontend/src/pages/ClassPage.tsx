@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,24 +33,44 @@ export default function ClassPage() {
 
   const info = classInfo[classId || ''] || classInfo.overwatch;
 
+  const fetchTeachers = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await client.entities.teachers.query({
+        query: { game_category: classId },
+        limit: 20,
+      });
+      if (res?.data?.items) {
+        setTeachers(res.data.items);
+      }
+    } catch (err) {
+      console.error('Failed to fetch teachers:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [classId]);
+
   useEffect(() => {
-    const fetchTeachers = async () => {
-      try {
-        const res = await client.entities.teachers.query({
-          query: { game_category: classId },
-          limit: 20,
-        });
-        if (res?.data?.items) {
-          setTeachers(res.data.items);
-        }
-      } catch (err) {
-        console.error('Failed to fetch teachers:', err);
-      } finally {
-        setLoading(false);
+    fetchTeachers();
+  }, [fetchTeachers]);
+
+  // Re-fetch data when page becomes visible (e.g., user navigates back)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchTeachers();
       }
     };
-    fetchTeachers();
-  }, [classId]);
+    const handleFocus = () => {
+      fetchTeachers();
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [fetchTeachers]);
 
   // Sort teachers: closed/full teachers go to bottom, then by remaining spots descending
   const sortedTeachers = useMemo(() => {
