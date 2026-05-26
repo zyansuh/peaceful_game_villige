@@ -4,6 +4,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import AdminPasswordGate from '@/components/AdminPasswordGate';
 import client from '@/lib/client';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from 'recharts';
 
 interface AdminLog {
   id: number;
@@ -50,6 +59,7 @@ export default function Dashboard() {
   });
   const [logs, setLogs] = useState<AdminLog[]>([]);
   const [newInterviewCount, setNewInterviewCount] = useState(0);
+  const [interviewChartData, setInterviewChartData] = useState<{ month: string; count: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -86,7 +96,7 @@ export default function Dashboard() {
         const logsRes = await client.entities.admin_logs.query({ query: {}, sort: '-created_at', limit: 10 });
         setLogs(logsRes?.data?.items || []);
 
-        // Fetch graduation interviews for notification badge
+        // Fetch graduation interviews for notification badge + chart
         try {
           const interviewsRes = await client.entities.graduation_interviews.queryAll({});
           const interviews = interviewsRes?.data || [];
@@ -96,6 +106,32 @@ export default function Dashboard() {
             return createdAt > oneDayAgo;
           }).length;
           setNewInterviewCount(recentCount);
+
+          // Build chart data for last 6 months
+          const now = new Date();
+          const monthMap: Record<string, number> = {};
+          const monthKeys: string[] = [];
+          for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            monthMap[key] = 0;
+            monthKeys.push(key);
+          }
+
+          interviews.forEach((interview: any) => {
+            if (!interview.created_at) return;
+            const createdAt = new Date(interview.created_at);
+            const key = `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, '0')}`;
+            if (key in monthMap) {
+              monthMap[key]++;
+            }
+          });
+
+          const chartData = monthKeys.map((key) => ({
+            month: `${parseInt(key.split('-')[1])}월`,
+            count: monthMap[key],
+          }));
+          setInterviewChartData(chartData);
         } catch {
           // graduation_interviews might not exist yet
         }
@@ -185,6 +221,45 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Interview Submission Trend Chart */}
+        {interviewChartData.length > 0 && (
+          <Card className="bg-gray-900 border-gray-800 mb-8">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold text-white mb-4">📊 월별 면담 제출 통계</h2>
+              <div className="h-56">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={interviewChartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                      axisLine={{ stroke: '#4B5563' }}
+                      tickLine={{ stroke: '#4B5563' }}
+                    />
+                    <YAxis
+                      allowDecimals={false}
+                      tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                      axisLine={{ stroke: '#4B5563' }}
+                      tickLine={{ stroke: '#4B5563' }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#1F2937',
+                        border: '1px solid #374151',
+                        borderRadius: '8px',
+                        color: '#F3F4F6',
+                      }}
+                      labelStyle={{ color: '#D1D5DB' }}
+                      formatter={(value: number) => [`${value}건`, '제출 수']}
+                    />
+                    <Bar dataKey="count" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Navigation */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
