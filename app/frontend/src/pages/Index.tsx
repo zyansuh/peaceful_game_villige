@@ -53,7 +53,7 @@ export default function Index() {
       <div className="relative overflow-hidden py-16 md:py-24">
         <div className="relative z-10 text-center px-4">
           <h1 className="text-4xl md:text-6xl font-black mb-4 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
-            평화로운게임마을
+            평화로운 게임마을
           </h1>
           <p className="text-lg md:text-xl text-gray-300 mb-2">🎮 신입 담당선생님 배정 시스템</p>
           <p className="text-gray-400 max-w-lg mx-auto">
