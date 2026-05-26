@@ -85,12 +85,14 @@ export default function Index() {
 
                 {/* Title and description */}
                 <div>
-                  <h2 className={`text-3xl md:text-4xl font-extrabold mb-2 bg-gradient-to-r ${cls.color} bg-clip-text text-transparent drop-shadow-lg`}>
-                    {cls.name}
-                  </h2>
-                  <p className="text-gray-300 text-sm mb-4">{cls.description}</p>
+                  <div className="overflow-hidden">
+                    <h2 className={`text-3xl md:text-4xl font-extrabold mb-2 bg-gradient-to-r ${cls.color} bg-clip-text text-transparent drop-shadow-lg translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 ease-out`}>
+                      {cls.name}
+                    </h2>
+                  </div>
+                  <p className="text-gray-300 text-sm mb-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-100 ease-out">{cls.description}</p>
                   <Button
-                    className={`w-full bg-gradient-to-r ${cls.color} text-white border-0 hover:opacity-90 shadow-lg transition-all duration-300 group-hover:shadow-xl`}
+                    className={`w-full bg-gradient-to-r ${cls.color} text-white border-0 hover:opacity-90 shadow-lg transition-all duration-500 delay-200 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100`}
                   >
                     입장하기
                   </Button>
