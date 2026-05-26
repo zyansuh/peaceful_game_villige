@@ -17,6 +17,9 @@ interface Teacher {
   status: string;
   position: string;
   tier: string;
+  teaching_style: string;
+  personality: string;
+  active_time: string;
 }
 
 const classInfo: Record<string, { name: string; gameKr: string; color: string; gradient: string }> = {
@@ -197,9 +200,9 @@ export default function ClassPage() {
           </div>
         )}
         {filteredTeachers.map((teacher) => {
-          const isFull = teacher.current_students >= teacher.max_students || teacher.status !== 'recruiting';
+          const isFull = teacher.current_students >= teacher.max_students || teacher.status === '선택불가' || teacher.status === 'closed';
           const remaining = teacher.max_students - teacher.current_students;
-          const isAlmostFull = !isFull && remaining <= 2 && teacher.status === 'recruiting';
+          const isAlmostFull = !isFull && (teacher.status === '마감임박' || (remaining <= 2 && remaining > 0 && (teacher.status === 'recruiting' || teacher.status === 'available')));
           const fillPercent = Math.min((teacher.current_students / teacher.max_students) * 100, 100);
 
           return (
@@ -217,18 +220,24 @@ export default function ClassPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-bold text-white truncate">{teacher.nickname}</h3>
+                        <h3 className="text-lg font-bold text-white truncate">{teacher.nickname} {teacher.position}</h3>
                         {isAlmostFull && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-500 text-white animate-[blink_1s_ease-in-out_infinite] shrink-0">
                             🔥 마감 임박!
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-400">{teacher.position} · {teacher.tier}</p>
                     </div>
                   </div>
 
-                  <p className="text-gray-300 text-sm mb-4 line-clamp-2">{teacher.intro}</p>
+                  {/* Teacher Info */}
+                  <div className="space-y-1 text-sm mb-4">
+                    <p className="text-gray-300"><span className="text-gray-500">성별 :</span> {teacher.teaching_style || '-'}</p>
+                    <p className="text-gray-300"><span className="text-gray-500">출생년도 :</span> {teacher.tier || '-'}</p>
+                    <p className="text-gray-300"><span className="text-gray-500">MBTI :</span> {teacher.personality || '-'}</p>
+                    <p className="text-gray-300"><span className="text-gray-500">게임유형 :</span> {teacher.active_time || '-'}</p>
+                    <p className="text-gray-300 line-clamp-2"><span className="text-gray-500">소개 :</span> {teacher.intro || '-'}</p>
+                  </div>
 
                   {/* Progress Bar */}
                   <div className="mb-4">
@@ -262,13 +271,13 @@ export default function ClassPage() {
 
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      {teacher.status === 'recruiting' && !isFull && !isAlmostFull && (
+                      {(teacher.status === 'recruiting' || teacher.status === 'available') && !isFull && !isAlmostFull && (
                         <Badge className="bg-green-500/20 text-green-400 border-green-500/30">모집중</Badge>
                       )}
                       {isAlmostFull && (
                         <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 animate-pulse">마감 임박</Badge>
                       )}
-                      {(teacher.status === 'closed' || isFull) && (
+                      {(teacher.status === 'closed' || teacher.status === '선택불가' || (isFull && !isAlmostFull)) && (
                         <Badge className="bg-red-500/20 text-red-400 border-red-500/30">마감</Badge>
                       )}
                       {teacher.status === 'resting' && (

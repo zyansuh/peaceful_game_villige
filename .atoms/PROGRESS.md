@@ -24,3 +24,5 @@
 - 2026-05-25: Mock data inserted (9 teachers)
 - 2026-05-25: Images generated (4 images)
 - 2026-05-25: Added urgency UI - blinking 마감임박 badge, progress bars, pulse animations
+- 2026-05-26: Deleted old PUBG teachers (달안 dup, 비니코코 dup, 쿠잉, 뚜비, 쫑이) and inserted 7 new PUBG teachers
+- 2026-05-26: Updated ClassPage and TeacherDetail to show 성별/출생년도/MBTI/게임유형/소개/인원현황 format

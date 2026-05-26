@@ -78,11 +78,9 @@ export default function TeacherDetail() {
               👨‍🏫
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">{teacher.nickname}</h1>
+              <h1 className="text-2xl font-bold text-white">{teacher.nickname} {teacher.position}</h1>
               <p className="text-gray-400">{teacher.class_name} · {teacher.game_category === 'overwatch' ? '오버워치' : teacher.game_category === 'pubg' ? '배틀그라운드' : '발로란트'}</p>
               <div className="flex gap-2 mt-2">
-                <Badge variant="outline" className="border-gray-600 text-gray-300">{teacher.tier}</Badge>
-                <Badge variant="outline" className="border-gray-600 text-gray-300">{teacher.position}</Badge>
                 {teacher.status === 'recruiting' && !isFull && (
                   <Badge className="bg-green-500/20 text-green-400 border-green-500/30">모집중</Badge>
                 )}
@@ -93,31 +91,46 @@ export default function TeacherDetail() {
             </div>
           </div>
 
-          {/* Info Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            <div className="bg-gray-800/50 rounded-lg p-4">
-              <p className="text-gray-500 text-xs mb-1">활동 시간</p>
-              <p className="text-gray-200">{teacher.active_time || '미정'}</p>
+          {/* Teacher Info */}
+          <div className="bg-gray-800/50 rounded-lg p-6 mb-8 space-y-3">
+            <div className="flex">
+              <span className="text-gray-500 w-24 shrink-0">성별 :</span>
+              <span className="text-gray-200">{teacher.teaching_style || '-'}</span>
             </div>
-            <div className="bg-gray-800/50 rounded-lg p-4">
-              <p className="text-gray-500 text-xs mb-1">성격</p>
-              <p className="text-gray-200">{teacher.personality || '미정'}</p>
+            <div className="flex">
+              <span className="text-gray-500 w-24 shrink-0">출생년도 :</span>
+              <span className="text-gray-200">{teacher.tier || '-'}</span>
             </div>
-            <div className="bg-gray-800/50 rounded-lg p-4">
-              <p className="text-gray-500 text-xs mb-1">교육 스타일</p>
-              <p className="text-gray-200">{teacher.teaching_style || '미정'}</p>
+            <div className="flex">
+              <span className="text-gray-500 w-24 shrink-0">MBTI :</span>
+              <span className="text-gray-200">{teacher.personality || '-'}</span>
             </div>
-            <div className="bg-gray-800/50 rounded-lg p-4">
-              <p className="text-gray-500 text-xs mb-1">현재 인원</p>
-              <p className="text-gray-200">{teacher.current_students} / {teacher.max_students}</p>
+            <div className="flex">
+              <span className="text-gray-500 w-24 shrink-0">게임유형 :</span>
+              <span className="text-gray-200">{teacher.active_time || '-'}</span>
+            </div>
+            <div className="flex">
+              <span className="text-gray-500 w-24 shrink-0">소개 :</span>
+              <span className="text-gray-200">{teacher.intro || '-'}</span>
+            </div>
+            <div className="flex items-center pt-2 border-t border-gray-700">
+              <span className="text-gray-500 w-24 shrink-0">인원현황</span>
+              <span className={`font-semibold ${isFull ? 'text-red-400' : 'text-green-400'}`}>
+                {teacher.current_students} / {teacher.max_students} 명
+              </span>
+              {isFull && (
+                <Badge className="ml-3 bg-red-500/20 text-red-400 border-red-500/30">마감</Badge>
+              )}
             </div>
           </div>
 
           {/* Detail Intro */}
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold text-white mb-3">소개</h3>
-            <p className="text-gray-300 leading-relaxed">{teacher.detail_intro}</p>
-          </div>
+          {teacher.detail_intro && (
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-white mb-3">상세 소개</h3>
+              <p className="text-gray-300 leading-relaxed">{teacher.detail_intro}</p>
+            </div>
+          )}
 
           {/* Message */}
           {teacher.message && (
