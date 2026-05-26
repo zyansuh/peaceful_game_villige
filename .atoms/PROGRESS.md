@@ -17,6 +17,7 @@
 - [x] Frontend: Application form and completion page
 - [x] Frontend: Admin dashboard, application management, teacher management
 - [x] Install dependencies and lint/build check
+- [x] Frontend: MyPage - application status tracking for logged-in users
 
 ## Progress Log
 - 2026-05-25: Database tables created (teachers, applications)

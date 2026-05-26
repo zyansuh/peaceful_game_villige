@@ -5,6 +5,7 @@ import ClassPage from "./pages/ClassPage";
 import TeacherDetail from "./pages/TeacherDetail";
 import ApplicationForm from "./pages/ApplicationForm";
 import ApplicationComplete from "./pages/ApplicationComplete";
+import MyPage from "./pages/MyPage";
 import Dashboard from "./pages/admin/Dashboard";
 import AdminApplications from "./pages/admin/AdminApplications";
 import AdminTeachers from "./pages/admin/AdminTeachers";
@@ -20,6 +21,7 @@ function App() {
           <Route path="/teacher/:teacherId" element={<TeacherDetail />} />
           <Route path="/apply/:teacherId" element={<ApplicationForm />} />
           <Route path="/apply-complete" element={<ApplicationComplete />} />
+          <Route path="/mypage" element={<MyPage />} />
           <Route path="/admin" element={<Dashboard />} />
           <Route path="/admin/applications" element={<AdminApplications />} />
           <Route path="/admin/teachers" element={<AdminTeachers />} />

@@ -52,6 +52,13 @@ export default function Layout({ children }: LayoutProps) {
 
           <div className="flex items-center gap-4">
             {user && (
+              <Link to="/mypage">
+                <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white">
+                  마이페이지
+                </Button>
+              </Link>
+            )}
+            {user && (
               <Link to="/admin">
                 <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white">
                   관리자
