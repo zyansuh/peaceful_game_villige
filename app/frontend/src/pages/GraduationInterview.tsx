@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ClipboardList, LogIn } from 'lucide-react';
+import { ClipboardList, LogIn, AlertCircle } from 'lucide-react';
 import client from '@/lib/client';
 
 interface Application {
@@ -18,6 +18,16 @@ interface Teacher {
   nickname: string;
 }
 
+interface ExistingInterview {
+  id: number;
+  answer1: string;
+  answer2: string;
+  answer3: string;
+  teacher_id: number;
+  teacher_name: string;
+  class_name: string;
+}
+
 export default function GraduationInterview() {
   const navigate = useNavigate();
   const [loggedIn, setLoggedIn] = useState(false);
@@ -30,6 +40,9 @@ export default function GraduationInterview() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [noApplication, setNoApplication] = useState(false);
+  const [existingInterview, setExistingInterview] = useState<ExistingInterview | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     const init = async () => {
@@ -45,7 +58,27 @@ export default function GraduationInterview() {
         // Check if already submitted
         const existingRes = await client.entities.graduation_interviews.list();
         if (existingRes?.data && existingRes.data.length > 0) {
-          setSubmitted(true);
+          const existing = existingRes.data[0] as ExistingInterview;
+          setExistingInterview(existing);
+          setIsEditMode(true);
+          setAnswer1(existing.answer1 || '');
+          setAnswer2(existing.answer2 || '');
+          setAnswer3(existing.answer3 || '');
+          setClassName(existing.class_name || '');
+
+          // Fetch teacher info from existing interview
+          if (existing.teacher_id) {
+            try {
+              const tRes = await client.entities.teachers.get({ id: String(existing.teacher_id) });
+              if (tRes?.data) {
+                setTeacher(tRes.data);
+              }
+            } catch {
+              // Use stored teacher name as fallback
+              setTeacher({ id: existing.teacher_id, nickname: existing.teacher_name || '알 수 없음' });
+            }
+          }
+
           setLoading(false);
           return;
         }
@@ -88,16 +121,26 @@ export default function GraduationInterview() {
     }
     setSubmitting(true);
     try {
-      await client.entities.graduation_interviews.create({
-        data: {
-          teacher_id: teacher?.id || 0,
-          teacher_name: teacher?.nickname || '알 수 없음',
-          class_name: className,
-          answer1: answer1.trim(),
-          answer2: answer2.trim(),
-          answer3: answer3.trim(),
-        },
-      });
+      const payload = {
+        teacher_id: teacher?.id || 0,
+        teacher_name: teacher?.nickname || '알 수 없음',
+        class_name: className,
+        answer1: answer1.trim(),
+        answer2: answer2.trim(),
+        answer3: answer3.trim(),
+      };
+
+      if (isEditMode && existingInterview) {
+        await client.entities.graduation_interviews.update(existingInterview.id, {
+          data: payload,
+        });
+        setSuccessMessage('수정이 완료되었습니다');
+      } else {
+        await client.entities.graduation_interviews.create({
+          data: payload,
+        });
+        setSuccessMessage('제출이 완료되었습니다');
+      }
       setSubmitted(true);
     } catch (err) {
       console.error('Failed to submit interview:', err);
@@ -143,7 +186,9 @@ export default function GraduationInterview() {
             <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
               <ClipboardList className="w-8 h-8 text-green-400" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">졸업면담지가 제출되었습니다!</h2>
+            <h2 className="text-xl font-bold text-white mb-2">
+              {successMessage || '졸업면담지가 제출되었습니다!'}
+            </h2>
             <p className="text-gray-400 mb-6">감사합니다. 담당 선생님이 확인할 예정입니다.</p>
             <Button
               onClick={() => navigate('/')}
@@ -188,6 +233,16 @@ export default function GraduationInterview() {
           <span>반: <span className="text-white font-medium">{className || '알 수 없음'}</span></span>
         </div>
       </div>
+
+      {/* Edit mode banner */}
+      {isEditMode && (
+        <div className="mb-6 flex items-center gap-3 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
+          <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
+          <p className="text-amber-300 text-sm">
+            이미 졸업면담지를 제출하셨습니다. 아래에서 내용을 수정할 수 있습니다.
+          </p>
+        </div>
+      )}
 
       <div className="space-y-6">
         {/* Question 1 */}
@@ -254,7 +309,10 @@ export default function GraduationInterview() {
           disabled={submitting}
           className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 py-6 text-lg font-semibold"
         >
-          {submitting ? '제출 중...' : '졸업면담지 제출하기'}
+          {submitting
+            ? (isEditMode ? '수정 중...' : '제출 중...')
+            : (isEditMode ? '졸업면담지 수정하기' : '졸업면담지 제출하기')
+          }
         </Button>
       </div>
     </div>

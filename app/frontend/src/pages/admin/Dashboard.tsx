@@ -49,6 +49,7 @@ export default function Dashboard() {
     remainingSlots: 0,
   });
   const [logs, setLogs] = useState<AdminLog[]>([]);
+  const [newInterviewCount, setNewInterviewCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -84,6 +85,20 @@ export default function Dashboard() {
         // Fetch admin logs
         const logsRes = await client.entities.admin_logs.query({ query: {}, sort: '-created_at', limit: 10 });
         setLogs(logsRes?.data?.items || []);
+
+        // Fetch graduation interviews for notification badge
+        try {
+          const interviewsRes = await client.entities.graduation_interviews.queryAll({});
+          const interviews = interviewsRes?.data || [];
+          const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+          const recentCount = interviews.filter((interview: any) => {
+            const createdAt = new Date(interview.created_at);
+            return createdAt > oneDayAgo;
+          }).length;
+          setNewInterviewCount(recentCount);
+        } catch {
+          // graduation_interviews might not exist yet
+        }
       } catch (err) {
         console.error('Failed to load dashboard:', err);
         navigate('/');
@@ -113,6 +128,26 @@ export default function Dashboard() {
             </Button>
           </Link>
         </div>
+
+        {/* New Interview Notification */}
+        {newInterviewCount > 0 && (
+          <Link to="/admin/interviews">
+            <div className="mb-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/15 transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📋</span>
+                <div className="flex-1">
+                  <p className="text-amber-300 font-semibold">
+                    새 졸업면담 {newInterviewCount}건 접수
+                  </p>
+                  <p className="text-amber-200/60 text-sm">최근 24시간 내 접수된 면담지입니다</p>
+                </div>
+                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-500 text-black font-bold text-sm">
+                  {newInterviewCount}
+                </span>
+              </div>
+            </div>
+          </Link>
+        )}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
