@@ -15,6 +15,8 @@ interface Teacher {
   max_students: number;
   current_students: number;
   status: string;
+  position: string;
+  tier: string;
 }
 
 export default function ApplicationForm() {
@@ -72,7 +74,7 @@ export default function ApplicationForm() {
           status: 'pending',
         },
       });
-      navigate(`/apply-complete?teacher=${encodeURIComponent(teacher.nickname)}`);
+      navigate(`/apply-complete?teacher=${encodeURIComponent(teacher.nickname)}&class=${encodeURIComponent(teacher.game_category || '')}&position=${encodeURIComponent(teacher.position || '')}&tier=${encodeURIComponent(teacher.tier || '')}`);
     } catch (err) {
       console.error('Failed to submit application:', err);
       alert('신청 중 오류가 발생했습니다. 다시 시도해주세요.');
