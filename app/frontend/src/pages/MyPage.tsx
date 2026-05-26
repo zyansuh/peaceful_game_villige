@@ -3,7 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, CheckCircle, XCircle, User, RefreshCw } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Clock, CheckCircle, XCircle, User, RefreshCw, Ban } from 'lucide-react';
 import client from '@/lib/client';
 
 interface Application {
@@ -30,6 +40,8 @@ export default function MyPage() {
   const [teachers, setTeachers] = useState<Record<number, Teacher>>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [cancelTarget, setCancelTarget] = useState<Application | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -75,6 +87,29 @@ export default function MyPage() {
     fetchData();
   };
 
+  const handleCancelApplication = async () => {
+    if (!cancelTarget) return;
+    setCancelling(true);
+    try {
+      await client.entities.applications.update({
+        id: String(cancelTarget.id),
+        data: { status: 'cancelled' },
+      });
+      // Update local state
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.id === cancelTarget.id ? { ...app, status: 'cancelled' } : app
+        )
+      );
+    } catch (err) {
+      console.error('Failed to cancel application:', err);
+      alert('신청 취소 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setCancelling(false);
+      setCancelTarget(null);
+    }
+  };
+
   const getStatusInfo = (status: string) => {
     switch (status) {
       case 'approved':
@@ -88,6 +123,12 @@ export default function MyPage() {
           label: '거절됨',
           icon: <XCircle className="w-4 h-4" />,
           className: 'bg-red-500/20 text-red-400 border-red-500/30',
+        };
+      case 'cancelled':
+        return {
+          label: '취소됨',
+          icon: <Ban className="w-4 h-4" />,
+          className: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
         };
       default:
         return {
@@ -170,7 +211,7 @@ export default function MyPage() {
       ) : (
         <div className="space-y-4">
           {/* Status summary */}
-          <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="grid grid-cols-4 gap-3 mb-6">
             <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 text-center">
               <p className="text-2xl font-bold text-yellow-400">
                 {applications.filter(a => a.status === 'pending').length}
@@ -188,6 +229,12 @@ export default function MyPage() {
                 {applications.filter(a => a.status === 'rejected').length}
               </p>
               <p className="text-xs text-red-400/70">거절됨</p>
+            </div>
+            <div className="bg-gray-500/10 border border-gray-500/20 rounded-lg p-3 text-center">
+              <p className="text-2xl font-bold text-gray-400">
+                {applications.filter(a => a.status === 'cancelled').length}
+              </p>
+              <p className="text-xs text-gray-400/70">취소됨</p>
             </div>
           </div>
 
@@ -241,9 +288,20 @@ export default function MyPage() {
                   </div>
 
                   {app.status === 'pending' && (
-                    <div className="mt-3 flex items-center gap-2 text-xs text-yellow-400/80">
-                      <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
-                      관리자 확인 대기 중입니다
+                    <div className="mt-4 flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-xs text-yellow-400/80">
+                        <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
+                        관리자 확인 대기 중입니다
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCancelTarget(app)}
+                        className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                      >
+                        <Ban className="w-3 h-3 mr-1" />
+                        신청 취소
+                      </Button>
                     </div>
                   )}
                   {app.status === 'approved' && (
@@ -258,12 +316,51 @@ export default function MyPage() {
                       다른 선생님에게 다시 신청해보세요
                     </div>
                   )}
+                  {app.status === 'cancelled' && (
+                    <div className="mt-3 flex items-center gap-2 text-xs text-gray-400/80">
+                      <Ban className="w-3 h-3" />
+                      신청이 취소되었습니다
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );
           })}
         </div>
       )}
+
+      {/* Cancel Confirmation Modal */}
+      <AlertDialog open={!!cancelTarget} onOpenChange={(open) => !open && setCancelTarget(null)}>
+        <AlertDialogContent className="bg-gray-900 border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">신청을 취소하시겠습니까?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              {cancelTarget && (
+                <>
+                  <span className="font-semibold text-white">
+                    {teachers[cancelTarget.teacher_id]?.nickname || `선생님 #${cancelTarget.teacher_id}`}
+                  </span>
+                  에 대한 신청을 취소합니다.
+                  <br />
+                  취소 후에는 다시 신청할 수 있습니다.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white">
+              돌아가기
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelApplication}
+              disabled={cancelling}
+              className="bg-red-600 hover:bg-red-700 text-white border-0"
+            >
+              {cancelling ? '취소 중...' : '신청 취소'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
