@@ -12,7 +12,7 @@ const classes = [
     hoverBorder: 'hover:border-blue-400',
     bgGlow: 'hover:shadow-blue-500/20',
     laserClass: 'laser-border laser-border-blue',
-    bannerImage: 'https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-26/pi5z36yaagxa/card-overwatch-banner-with-text.png',
+    bannerImage: 'https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-26/pi56urqaagva/card-overwatch-reinhardt-banner.png',
     mascotImage: 'https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizrrkiaagva/mascot-otter-silhouette.png',
     description: '팀워크와 전략의 정수, 오버워치를 함께 즐겨요!',
     linkColor: 'text-blue-400 hover:text-blue-300',

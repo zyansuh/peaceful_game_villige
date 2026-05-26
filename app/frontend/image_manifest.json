@@ -160,6 +160,16 @@
       "description": "Gaming banner for Overwatch class featuring cute otter mascot character in a futuristic sci-fi setting with blue and cyan neon lights, the text 'OVERWATCH' prominently displayed in a stylish futuristic font integrated naturally into the composition, dark background with blue energy effects and holographic elements, gaming community aesthetic",
       "style": "cartoon",
       "filename": "card-overwatch-banner-with-text.png"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-26/pi56urqaagva/card-overwatch-reinhardt-banner.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-26/pi56urqaagva/card-overwatch-reinhardt-banner.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-26/pi56urqaagva/card-overwatch-reinhardt-banner.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "Gaming banner for Overwatch class featuring Reinhardt character in his iconic blue and silver armor, holding his massive rocket hammer in a heroic pose. Futuristic sci-fi setting with blue and cyan neon lights, the text 'OVERWATCH' prominently displayed in a stylish futuristic font integrated naturally into the composition. Dark background with blue energy effects, shield barrier glowing in the background, epic and powerful atmosphere, gaming community aesthetic",
+      "style": "cartoon",
+      "filename": "card-overwatch-reinhardt-banner.png"
     }
   ],
   "success_count": 1,
