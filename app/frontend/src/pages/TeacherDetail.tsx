@@ -24,11 +24,34 @@ interface Teacher {
   status: string;
 }
 
+interface Review {
+  id: number;
+  user_id: string;
+  teacher_id: string;
+  teacher_name: string;
+  class_name: string;
+  rating: number;
+  content: string;
+  nickname: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export default function TeacherDetail() {
   const { teacherId } = useParams<{ teacherId: string }>();
   const navigate = useNavigate();
   const [teacher, setTeacher] = useState<Teacher | null>(null);
   const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
+
+  // Review form state
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewContent, setReviewContent] = useState('');
+  const [reviewNickname, setReviewNickname] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [hoverRating, setHoverRating] = useState(0);
 
   const fetchTeacher = useCallback(async () => {
     try {
@@ -44,9 +67,45 @@ export default function TeacherDetail() {
     }
   }, [teacherId]);
 
+  const fetchReviews = useCallback(async () => {
+    try {
+      setReviewsLoading(true);
+      const res = await client.apiCall.invoke({
+        url: '/api/v1/entities/reviews/all',
+        method: 'GET',
+        data: {
+          query: JSON.stringify({ teacher_id: teacherId }),
+          sort: '-created_at',
+          limit: 50,
+          skip: 0,
+        },
+      });
+      if (res?.data?.items) {
+        setReviews(res.data.items);
+      }
+    } catch (err) {
+      console.error('Failed to fetch reviews:', err);
+    } finally {
+      setReviewsLoading(false);
+    }
+  }, [teacherId]);
+
+  const checkAuth = useCallback(async () => {
+    try {
+      const res = await client.auth.me();
+      if (res?.data) {
+        setUser(res.data);
+      }
+    } catch {
+      setUser(null);
+    }
+  }, []);
+
   useEffect(() => {
     fetchTeacher();
-  }, [fetchTeacher]);
+    fetchReviews();
+    checkAuth();
+  }, [fetchTeacher, fetchReviews, checkAuth]);
 
   // Re-fetch data when page becomes visible (e.g., user navigates back after applying)
   useEffect(() => {
@@ -66,6 +125,82 @@ export default function TeacherDetail() {
     };
   }, [fetchTeacher]);
 
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewContent.trim() || !reviewNickname.trim()) return;
+
+    try {
+      setSubmitting(true);
+      await client.entities.reviews.create({
+        data: {
+          teacher_id: String(teacherId),
+          teacher_name: teacher?.nickname || '',
+          class_name: teacher?.class_name || '',
+          rating: reviewRating,
+          content: reviewContent.trim(),
+          nickname: reviewNickname.trim(),
+        },
+      });
+      // Reset form and refresh reviews
+      setReviewRating(5);
+      setReviewContent('');
+      setReviewNickname('');
+      await fetchReviews();
+    } catch (err) {
+      console.error('Failed to submit review:', err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const averageRating = reviews.length > 0
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    : 0;
+
+  const getClassColor = (className: string) => {
+    if (className === '수달반') return '#3B82F6';
+    if (className === '사자반') return '#F97316';
+    if (className === '여우반') return '#8B5CF6';
+    return '#3B82F6';
+  };
+
+  const renderStars = (rating: number, size: 'sm' | 'md' | 'lg' = 'md') => {
+    const sizeClass = size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-2xl' : 'text-lg';
+    return (
+      <span className={`${sizeClass} inline-flex gap-0.5`}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <span key={star} className={star <= rating ? 'text-yellow-400' : 'text-gray-600'}>
+            ★
+          </span>
+        ))}
+      </span>
+    );
+  };
+
+  const renderInteractiveStars = () => {
+    return (
+      <span className="text-2xl inline-flex gap-0.5 cursor-pointer">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <span
+            key={star}
+            className={`transition-colors ${star <= (hoverRating || reviewRating) ? 'text-yellow-400' : 'text-gray-600'} hover:scale-110`}
+            onClick={() => setReviewRating(star)}
+            onMouseEnter={() => setHoverRating(star)}
+            onMouseLeave={() => setHoverRating(0)}
+          >
+            ★
+          </span>
+        ))}
+      </span>
+    );
+  };
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-12 text-center">
@@ -83,6 +218,7 @@ export default function TeacherDetail() {
   }
 
   const isFull = teacher.current_students >= teacher.max_students || teacher.status !== 'recruiting';
+  const classColor = getClassColor(teacher.class_name);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
@@ -158,8 +294,6 @@ export default function TeacherDetail() {
             </div>
           </div>
 
-
-
           {/* Message */}
           {teacher.message && (
             <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg p-4 mb-8">
@@ -178,6 +312,100 @@ export default function TeacherDetail() {
                 이 선생님 선택하기
               </Button>
             </Link>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Reviews Section */}
+      <Card className="bg-gray-900 border-gray-800 mt-6">
+        <CardContent className="p-8">
+          {/* Reviews Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-white">리뷰</h2>
+            <div className="flex items-center gap-3">
+              {reviews.length > 0 && (
+                <>
+                  {renderStars(Math.round(averageRating), 'md')}
+                  <span className="text-white font-semibold">{averageRating.toFixed(1)}</span>
+                  <span className="text-gray-400 text-sm">({reviews.length}개)</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Review Form */}
+          {user ? (
+            <form onSubmit={handleSubmitReview} className="mb-8 p-5 rounded-lg border border-gray-700 bg-gray-800/50">
+              <h3 className="text-white font-semibold mb-4">리뷰 작성</h3>
+              <div className="mb-4">
+                <label className="text-gray-400 text-sm block mb-1">별점</label>
+                {renderInteractiveStars()}
+              </div>
+              <div className="mb-4">
+                <label className="text-gray-400 text-sm block mb-1">닉네임</label>
+                <input
+                  type="text"
+                  value={reviewNickname}
+                  onChange={(e) => setReviewNickname(e.target.value)}
+                  placeholder="닉네임을 입력하세요"
+                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  maxLength={20}
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="text-gray-400 text-sm block mb-1">내용</label>
+                <textarea
+                  value={reviewContent}
+                  onChange={(e) => setReviewContent(e.target.value)}
+                  placeholder="선생님에 대한 리뷰를 작성해주세요"
+                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors resize-none"
+                  rows={3}
+                  maxLength={500}
+                  required
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={submitting || !reviewContent.trim() || !reviewNickname.trim()}
+                className="text-white border-0"
+                style={{ backgroundColor: classColor }}
+              >
+                {submitting ? '등록 중...' : '리뷰 등록'}
+              </Button>
+            </form>
+          ) : (
+            <div className="mb-8 p-5 rounded-lg border border-gray-700 bg-gray-800/30 text-center">
+              <p className="text-gray-400">로그인 후 리뷰를 작성할 수 있습니다</p>
+              <Button
+                onClick={() => client.auth.toLogin()}
+                className="mt-3 bg-gray-700 hover:bg-gray-600 text-white border-0"
+              >
+                로그인
+              </Button>
+            </div>
+          )}
+
+          {/* Reviews List */}
+          {reviewsLoading ? (
+            <p className="text-gray-400 text-center py-4">리뷰 로딩 중...</p>
+          ) : reviews.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">아직 리뷰가 없습니다. 첫 번째 리뷰를 작성해보세요!</p>
+          ) : (
+            <div className="space-y-4">
+              {reviews.map((review) => (
+                <div key={review.id} className="p-4 rounded-lg bg-gray-800/40 border border-gray-700/50">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <span className="text-white font-medium">{review.nickname || '익명'}</span>
+                      {renderStars(review.rating, 'sm')}
+                    </div>
+                    <span className="text-gray-500 text-xs">{formatDate(review.created_at)}</span>
+                  </div>
+                  <p className="text-gray-300 text-sm leading-relaxed">{review.content}</p>
+                </div>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>

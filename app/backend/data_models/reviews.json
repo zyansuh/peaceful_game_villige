@@ -1,0 +1,45 @@
+{
+    "title": "reviews",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID of the reviewer"
+        },
+        "teacher_id": {
+            "type": "string",
+            "description": "ID of the teacher being reviewed"
+        },
+        "teacher_name": {
+            "type": "string",
+            "description": "Name of the teacher"
+        },
+        "class_name": {
+            "type": "string",
+            "description": "Class name: 수달반, 사자반, 여우반"
+        },
+        "rating": {
+            "type": "integer",
+            "description": "Rating from 1 to 5"
+        },
+        "content": {
+            "type": "string",
+            "description": "Review content text"
+        },
+        "nickname": {
+            "type": "string",
+            "description": "Reviewer display name"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "teacher_id",
+        "rating",
+        "content"
+    ]
+}
