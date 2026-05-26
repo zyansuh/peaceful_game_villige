@@ -25,6 +25,44 @@ export default function SpaceBackground() {
       {/* Stars layer 3 - bright stars with twinkle */}
       <div className="absolute inset-0 animate-stars-twinkle" style={{ backgroundImage: generateStarField(20, 2) }} />
       
+      {/* Subtle planets */}
+      <div
+        className="absolute rounded-full animate-planet-drift-1"
+        style={{
+          width: '120px',
+          height: '120px',
+          top: '15%',
+          right: '12%',
+          opacity: 0.1,
+          filter: 'blur(24px)',
+          background: 'radial-gradient(circle at 35% 35%, rgba(99, 102, 241, 0.6), rgba(67, 56, 202, 0.3) 50%, transparent 70%)',
+        }}
+      />
+      <div
+        className="absolute rounded-full animate-planet-drift-2"
+        style={{
+          width: '80px',
+          height: '80px',
+          bottom: '20%',
+          left: '8%',
+          opacity: 0.12,
+          filter: 'blur(20px)',
+          background: 'radial-gradient(circle at 40% 30%, rgba(249, 115, 22, 0.5), rgba(194, 65, 12, 0.25) 50%, transparent 70%)',
+        }}
+      />
+      <div
+        className="absolute rounded-full animate-planet-drift-3"
+        style={{
+          width: '60px',
+          height: '60px',
+          top: '60%',
+          right: '35%',
+          opacity: 0.08,
+          filter: 'blur(18px)',
+          background: 'radial-gradient(circle at 30% 40%, rgba(147, 51, 234, 0.5), rgba(88, 28, 135, 0.25) 50%, transparent 70%)',
+        }}
+      />
+
       {/* Overall subtle overlay to keep it muted */}
       <div className="absolute inset-0 bg-gray-950/40" />
     </div>

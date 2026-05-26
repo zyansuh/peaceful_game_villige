@@ -14,11 +14,11 @@ export default function Signup() {
 
   const validateForm = (): boolean => {
     if (!username.trim()) {
-      setError('평겜마 아이디를 입력해주세요.');
+      setError('평겜마 닉네임을 입력해주세요.');
       return false;
     }
     if (username.trim().length < 2) {
-      setError('아이디는 2자 이상이어야 합니다.');
+      setError('닉네임은 2자 이상이어야 합니다.');
       return false;
     }
     if (!password) {
@@ -82,7 +82,7 @@ export default function Signup() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="username" className="text-gray-300 text-sm font-medium">
-                평겜마 아이디
+                평겜마 닉네임
               </Label>
               <Input
                 id="username"
@@ -92,7 +92,7 @@ export default function Signup() {
                   setUsername(e.target.value);
                   setError('');
                 }}
-                placeholder="사용할 아이디를 입력하세요"
+                placeholder="사용할 닉네임을 입력하세요"
                 className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-purple-500 focus:ring-purple-500/20"
                 autoComplete="username"
               />
