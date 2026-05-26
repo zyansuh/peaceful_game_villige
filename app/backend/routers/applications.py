@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
 from services.applications import ApplicationsService
+from services.teachers import TeachersService
 from dependencies.auth import get_current_user
 from schemas.auth import UserResponse
 
@@ -204,13 +205,30 @@ async def create_applications(
     logger.debug(f"Creating new applications with data: {data}")
     
     service = ApplicationsService(db)
+    teachers_service = TeachersService(db)
     try:
+        # Check if teacher exists and is still recruiting
+        teacher = await teachers_service.get_by_id(data.teacher_id)
+        if not teacher:
+            raise HTTPException(status_code=404, detail="Teacher not found")
+        if teacher.status == "closed":
+            raise HTTPException(status_code=400, detail="This teacher is no longer accepting students")
+
         result = await service.create(data.model_dump(), user_id=str(current_user.id))
         if not result:
             raise HTTPException(status_code=400, detail="Failed to create applications")
         
+        # Increment teacher's current_students and close if full
+        new_current = teacher.current_students + 1
+        update_data = {"current_students": new_current}
+        if new_current >= teacher.max_students:
+            update_data["status"] = "closed"
+        await teachers_service.update(data.teacher_id, update_data)
+        
         logger.info(f"Applications created successfully with id: {result.id}")
         return result
+    except HTTPException:
+        raise
     except ValueError as e:
         logger.error(f"Validation error creating applications: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
