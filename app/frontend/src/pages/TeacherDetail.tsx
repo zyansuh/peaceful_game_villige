@@ -113,21 +113,35 @@ export default function TeacherDetail() {
 
           {/* Teacher Info */}
           <div className="bg-gray-800/50 rounded-lg p-6 mb-8 space-y-3">
-            <div className="flex">
-              <span className="text-gray-500 w-24 shrink-0">성별 :</span>
-              <span className="text-gray-200">{teacher.teaching_style || '-'}</span>
-            </div>
-            <div className="flex">
-              <span className="text-gray-500 w-24 shrink-0">출생년도 :</span>
-              <span className="text-gray-200">{teacher.tier || '-'}</span>
-            </div>
+            {(() => {
+              let gender = '';
+              let birthYear = '';
+              if (teacher.detail_intro) {
+                const genderMatch = teacher.detail_intro.match(/성별:\s*([^\s|]+)/);
+                const birthMatch = teacher.detail_intro.match(/출생년도:\s*([^\s|]+)/);
+                if (genderMatch) gender = genderMatch[1];
+                if (birthMatch) birthYear = birthMatch[1];
+              }
+              return (
+                <>
+                  <div className="flex">
+                    <span className="text-gray-500 w-24 shrink-0">성별 :</span>
+                    <span className="text-gray-200">{gender || '-'}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-24 shrink-0">출생년도 :</span>
+                    <span className="text-gray-200">{birthYear || '-'}</span>
+                  </div>
+                </>
+              );
+            })()}
             <div className="flex">
               <span className="text-gray-500 w-24 shrink-0">MBTI :</span>
               <span className="text-gray-200">{teacher.personality || '-'}</span>
             </div>
             <div className="flex">
               <span className="text-gray-500 w-24 shrink-0">게임유형 :</span>
-              <span className="text-gray-200">{teacher.active_time || '-'}</span>
+              <span className="text-gray-200">{teacher.teaching_style || '-'}</span>
             </div>
             <div className="flex">
               <span className="text-gray-500 w-24 shrink-0">소개 :</span>

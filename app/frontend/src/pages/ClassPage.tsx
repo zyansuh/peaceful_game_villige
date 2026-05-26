@@ -9,6 +9,7 @@ interface Teacher {
   id: number;
   nickname: string;
   intro: string;
+  detail_intro: string;
   profile_image: string;
   max_students: number;
   current_students: number;
@@ -18,6 +19,18 @@ interface Teacher {
   teaching_style: string;
   personality: string;
   active_time: string;
+}
+
+function parseDetailIntro(detailIntro: string): { gender: string; birthYear: string } {
+  let gender = '';
+  let birthYear = '';
+  if (detailIntro) {
+    const genderMatch = detailIntro.match(/성별:\s*([^\s|]+)/);
+    const birthMatch = detailIntro.match(/출생년도:\s*([^\s|]+)/);
+    if (genderMatch) gender = genderMatch[1];
+    if (birthMatch) birthYear = birthMatch[1];
+  }
+  return { gender, birthYear };
 }
 
 const classInfo: Record<string, { name: string; gameKr: string; color: string; gradient: string }> = {
@@ -136,10 +149,17 @@ export default function ClassPage() {
 
                 {/* Teacher Info */}
                 <div className="space-y-1 text-sm mb-4">
-                  <p className="text-gray-300"><span className="text-gray-500">성별 :</span> {teacher.teaching_style || '-'}</p>
-                  <p className="text-gray-300"><span className="text-gray-500">출생년도 :</span> {teacher.tier || '-'}</p>
+                  {(() => {
+                    const { gender, birthYear } = parseDetailIntro(teacher.detail_intro);
+                    return (
+                      <>
+                        <p className="text-gray-300"><span className="text-gray-500">성별 :</span> {gender || '-'}</p>
+                        <p className="text-gray-300"><span className="text-gray-500">출생년도 :</span> {birthYear || '-'}</p>
+                      </>
+                    );
+                  })()}
                   <p className="text-gray-300"><span className="text-gray-500">MBTI :</span> {teacher.personality || '-'}</p>
-                  <p className="text-gray-300"><span className="text-gray-500">게임유형 :</span> {teacher.active_time || '-'}</p>
+                  <p className="text-gray-300"><span className="text-gray-500">게임유형 :</span> {teacher.teaching_style || '-'}</p>
                   <p className="text-gray-300 line-clamp-2"><span className="text-gray-500">소개 :</span> {teacher.intro || '-'}</p>
                 </div>
 
