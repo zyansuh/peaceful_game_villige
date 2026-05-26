@@ -14,6 +14,7 @@ import AdminInterviews from "./pages/admin/AdminInterviews";
 import AuthCallback from "./pages/AuthCallback";
 import Signup from "./pages/Signup";
 import SignupComplete from "./pages/SignupComplete";
+import InterviewComplete from "./pages/InterviewComplete";
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/signup-complete" element={<SignupComplete />} />
+          <Route path="/interview-complete" element={<InterviewComplete />} />
         </Routes>
       </Layout>
     </BrowserRouter>

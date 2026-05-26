@@ -38,11 +38,9 @@ export default function GraduationInterview() {
   const [answer2, setAnswer2] = useState('');
   const [answer3, setAnswer3] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [noApplication, setNoApplication] = useState(false);
   const [existingInterview, setExistingInterview] = useState<ExistingInterview | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     const init = async () => {
@@ -134,14 +132,12 @@ export default function GraduationInterview() {
         await client.entities.graduation_interviews.update(existingInterview.id, {
           data: payload,
         });
-        setSuccessMessage('수정이 완료되었습니다');
       } else {
         await client.entities.graduation_interviews.create({
           data: payload,
         });
-        setSuccessMessage('제출이 완료되었습니다');
       }
-      setSubmitted(true);
+      navigate('/interview-complete');
     } catch (err) {
       console.error('Failed to submit interview:', err);
       alert('제출 중 오류가 발생했습니다. 다시 시도해주세요.');
@@ -178,30 +174,7 @@ export default function GraduationInterview() {
     );
   }
 
-  if (submitted) {
-    return (
-      <div className="container mx-auto px-4 py-16 max-w-lg">
-        <Card className="bg-gray-900 border-gray-800">
-          <CardContent className="p-12 text-center">
-            <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
-              <ClipboardList className="w-8 h-8 text-green-400" />
-            </div>
-            <h2 className="text-xl font-bold text-white mb-2">
-              {successMessage || '졸업면담지가 제출되었습니다!'}
-            </h2>
-            <p className="text-gray-400 mb-6">감사합니다. 담당 선생님이 확인할 예정입니다.</p>
-            <Button
-              onClick={() => navigate('/')}
-              variant="outline"
-              className="border-gray-700 text-gray-300 hover:bg-gray-800"
-            >
-              홈으로 돌아가기
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+
 
   if (noApplication) {
     return (
