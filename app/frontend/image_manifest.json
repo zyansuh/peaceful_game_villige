@@ -50,6 +50,66 @@
       "description": "Dark gaming-themed wide banner background for a fox class. Deep purple and pink gradient background with a large elegant fox silhouette in the center, glowing neon purple edges on the silhouette, subtle digital grid pattern, atmospheric mist effects, sleek and strategic gaming aesthetic",
       "style": "photorealistic",
       "filename": "class-bg-fox-purple-silhouette.jpg"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizi3wyaagwq/class-otter-overwatch-gaming.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizi3wyaagwq/class-otter-overwatch-gaming.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizi3wyaagwq/class-otter-overwatch-gaming.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "Dark gaming banner background for Overwatch class. A cute but fierce otter character wearing Overwatch-style futuristic armor and helmet, holding a glowing energy weapon, standing in a heroic pose. Neon blue and cyan lighting, sci-fi environment with holographic displays behind. Dynamic action pose, game character art style, vibrant blue energy effects",
+      "style": "cartoon",
+      "filename": "class-otter-overwatch-gaming.jpg"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizixlqaagvq/class-lion-pubg-gaming.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizixlqaagvq/class-lion-pubg-gaming.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizixlqaagvq/class-lion-pubg-gaming.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "Dark gaming banner background for PUBG Battlegrounds class. A fierce lion character wearing military tactical gear, bulletproof vest, and combat helmet, holding an assault rifle. Standing in a battleground environment with orange smoke grenades and explosions in background. Intense orange and amber lighting, military action game aesthetic, powerful stance",
+      "style": "cartoon",
+      "filename": "class-lion-pubg-gaming.jpg"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizizoiaagxa/class-fox-valorant-gaming.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizizoiaagxa/class-fox-valorant-gaming.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizizoiaagxa/class-fox-valorant-gaming.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "Dark gaming banner background for Valorant class. A sleek and cunning fox character wearing Valorant agent-style tactical suit with glowing purple accents, wielding dual pistols in a stylish pose. Neon purple and magenta lighting, futuristic tactical environment with ability effects swirling around. Strategic and cool vibe, agent character art style",
+      "style": "cartoon",
+      "filename": "class-fox-valorant-gaming.jpg"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizmjliaagwq/card-overwatch-banner.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizmjliaagwq/card-overwatch-banner.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizmjliaagwq/card-overwatch-banner.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "Dark blue Overwatch game banner card image. Shows Overwatch game environment with blue tones, featuring the Overwatch logo symbol subtly in the background, dark futuristic sci-fi cityscape, blue neon lighting effects, team-based shooter game aesthetic. Wide aspect ratio card image with dark moody atmosphere",
+      "style": "photorealistic",
+      "filename": "card-overwatch-banner.jpg"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizmnraaagvq/card-pubg-banner.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizmnraaagvq/card-pubg-banner.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizmnraaagvq/card-pubg-banner.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "PUBG Battlegrounds game banner card image with orange glowing frame border effect. Shows a dark battleground scene with orange and amber lighting, military vehicles and terrain in background, PUBG text logo visible, intense warfare atmosphere with smoke and fire effects. Orange neon border glow around the edges",
+      "style": "photorealistic",
+      "filename": "card-pubg-banner.jpg"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizmhxaaagxa/card-valorant-banner.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizmhxaaagxa/card-valorant-banner.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1277232/2026-05-25/pizmhxaaagxa/card-valorant-banner.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "Valorant game banner card image with purple and red cosmic energy effects. Dark background with swirling red and purple nebula-like energy, a mysterious dark creature or agent silhouette with glowing red eyes, magical ability effects, tactical shooter game aesthetic with dark fantasy elements",
+      "style": "photorealistic",
+      "filename": "card-valorant-banner.jpg"
     }
   ],
   "success_count": 3,
