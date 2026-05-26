@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import client from '@/lib/client';
 
 interface Teacher {
@@ -28,18 +29,31 @@ interface Teacher {
   status: string;
 }
 
-const defaultForm = {
+interface TeacherForm {
+  game_category: string;
+  class_name: string;
+  nickname: string;
+  position: string;
+  gender: string;
+  birth_year: string;
+  mbti: string;
+  game_type: string;
+  intro: string;
+  max_students: number;
+  current_students: number;
+  status: string;
+}
+
+const defaultForm: TeacherForm = {
   game_category: 'overwatch',
   class_name: '수달반',
   nickname: '',
+  position: '선생님',
+  gender: '',
+  birth_year: '',
+  mbti: '',
+  game_type: '',
   intro: '',
-  detail_intro: '',
-  tier: '',
-  active_time: '',
-  personality: '',
-  teaching_style: '',
-  position: '',
-  message: '',
   max_students: 5,
   current_students: 0,
   status: 'recruiting',
@@ -51,13 +65,28 @@ const categoryToClass: Record<string, string> = {
   valorant: '여우반',
 };
 
+type ClassFilter = '전체' | '수달반' | '사자반' | '여우반';
+
+function parseDetailIntro(detailIntro: string): { gender: string; birthYear: string } {
+  let gender = '';
+  let birthYear = '';
+  if (detailIntro) {
+    const genderMatch = detailIntro.match(/성별:\s*([^\s|]+)/);
+    const birthMatch = detailIntro.match(/출생년도:\s*([^\s|]+)/);
+    if (genderMatch) gender = genderMatch[1];
+    if (birthMatch) birthYear = birthMatch[1].replace('년생', '');
+  }
+  return { gender, birthYear };
+}
+
 export default function AdminTeachers() {
   const navigate = useNavigate();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [form, setForm] = useState(defaultForm);
+  const [form, setForm] = useState<TeacherForm>(defaultForm);
+  const [classFilter, setClassFilter] = useState<ClassFilter>('전체');
 
   useEffect(() => {
     const init = async () => {
@@ -86,11 +115,22 @@ export default function AdminTeachers() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const detailIntro = `성별: ${form.gender} | 출생년도: ${form.birth_year}년생`;
       const data = {
-        ...form,
+        game_category: form.game_category,
         class_name: categoryToClass[form.game_category] || '수달반',
+        nickname: form.nickname,
+        position: form.position,
+        detail_intro: detailIntro,
+        personality: form.mbti,
+        teaching_style: form.game_type,
+        intro: form.intro,
+        message: form.intro,
         max_students: Number(form.max_students),
         current_students: Number(form.current_students),
+        status: form.status,
+        tier: '',
+        active_time: '',
       };
 
       if (editingId) {
@@ -109,24 +149,33 @@ export default function AdminTeachers() {
   };
 
   const handleEdit = (teacher: Teacher) => {
+    const { gender, birthYear } = parseDetailIntro(teacher.detail_intro);
     setForm({
       game_category: teacher.game_category,
       class_name: teacher.class_name,
       nickname: teacher.nickname,
+      position: teacher.position || '선생님',
+      gender,
+      birth_year: birthYear,
+      mbti: teacher.personality || '',
+      game_type: teacher.teaching_style || '',
       intro: teacher.intro || '',
-      detail_intro: teacher.detail_intro || '',
-      tier: teacher.tier || '',
-      active_time: teacher.active_time || '',
-      personality: teacher.personality || '',
-      teaching_style: teacher.teaching_style || '',
-      position: teacher.position || '',
-      message: teacher.message || '',
       max_students: teacher.max_students,
       current_students: teacher.current_students,
       status: teacher.status,
     });
     setEditingId(teacher.id);
     setShowForm(true);
+  };
+
+  const handleDelete = async (teacherId: number) => {
+    try {
+      await client.entities.teachers.delete({ id: String(teacherId) });
+      setTeachers(prev => prev.filter(t => t.id !== teacherId));
+    } catch (err) {
+      console.error('Failed to delete teacher:', err);
+      alert('삭제에 실패했습니다.');
+    }
   };
 
   const updateStatus = async (teacherId: number, newStatus: string) => {
@@ -155,6 +204,10 @@ export default function AdminTeachers() {
         return <Badge variant="outline">{status}</Badge>;
     }
   };
+
+  const filteredTeachers = classFilter === '전체'
+    ? teachers
+    : teachers.filter(t => t.class_name === classFilter);
 
   if (loading) {
     return (
@@ -203,30 +256,41 @@ export default function AdminTeachers() {
                   <Input value={form.nickname} onChange={(e) => setForm({ ...form, nickname: e.target.value })} required className="bg-gray-800 border-gray-700 text-white mt-1" />
                 </div>
                 <div>
-                  <Label className="text-gray-300">한줄 소개</Label>
-                  <Input value={form.intro} onChange={(e) => setForm({ ...form, intro: e.target.value })} className="bg-gray-800 border-gray-700 text-white mt-1" />
-                </div>
-                <div>
-                  <Label className="text-gray-300">상세 소개</Label>
-                  <Textarea value={form.detail_intro} onChange={(e) => setForm({ ...form, detail_intro: e.target.value })} rows={3} className="bg-gray-800 border-gray-700 text-white mt-1" />
+                  <Label className="text-gray-300">직책</Label>
+                  <Select value={form.position} onValueChange={(v) => setForm({ ...form, position: v })}>
+                    <SelectTrigger className="bg-gray-800 border-gray-700 text-white mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-800 border-gray-700">
+                      <SelectItem value="선생님">선생님</SelectItem>
+                      <SelectItem value="주임교사">주임교사</SelectItem>
+                      <SelectItem value="국장">국장</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-gray-300">게임 티어</Label>
-                    <Input value={form.tier} onChange={(e) => setForm({ ...form, tier: e.target.value })} className="bg-gray-800 border-gray-700 text-white mt-1" />
+                    <Label className="text-gray-300">성별</Label>
+                    <Input value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })} placeholder="남 / 여" className="bg-gray-800 border-gray-700 text-white mt-1" />
                   </div>
                   <div>
-                    <Label className="text-gray-300">포지션</Label>
-                    <Input value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} className="bg-gray-800 border-gray-700 text-white mt-1" />
+                    <Label className="text-gray-300">출생년도</Label>
+                    <Input value={form.birth_year} onChange={(e) => setForm({ ...form, birth_year: e.target.value })} placeholder="예: 99" className="bg-gray-800 border-gray-700 text-white mt-1" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-gray-300">MBTI</Label>
+                    <Input value={form.mbti} onChange={(e) => setForm({ ...form, mbti: e.target.value })} placeholder="예: ENFP" className="bg-gray-800 border-gray-700 text-white mt-1" />
+                  </div>
+                  <div>
+                    <Label className="text-gray-300">게임유형</Label>
+                    <Input value={form.game_type} onChange={(e) => setForm({ ...form, game_type: e.target.value })} placeholder="예: 빠대/경쟁" className="bg-gray-800 border-gray-700 text-white mt-1" />
                   </div>
                 </div>
                 <div>
-                  <Label className="text-gray-300">활동 시간</Label>
-                  <Input value={form.active_time} onChange={(e) => setForm({ ...form, active_time: e.target.value })} className="bg-gray-800 border-gray-700 text-white mt-1" />
-                </div>
-                <div>
-                  <Label className="text-gray-300">교육 스타일</Label>
-                  <Input value={form.teaching_style} onChange={(e) => setForm({ ...form, teaching_style: e.target.value })} className="bg-gray-800 border-gray-700 text-white mt-1" />
+                  <Label className="text-gray-300">소개</Label>
+                  <Textarea value={form.intro} onChange={(e) => setForm({ ...form, intro: e.target.value })} rows={3} placeholder="선생님 소개를 입력하세요" className="bg-gray-800 border-gray-700 text-white mt-1" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -251,10 +315,6 @@ export default function AdminTeachers() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label className="text-gray-300">한마디</Label>
-                  <Input value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="bg-gray-800 border-gray-700 text-white mt-1" />
-                </div>
                 <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0">
                   {editingId ? '수정 완료' : '등록 완료'}
                 </Button>
@@ -264,8 +324,33 @@ export default function AdminTeachers() {
         </div>
       </div>
 
+      {/* Class Filter Tabs */}
+      <div className="flex gap-2 mb-6">
+        {(['전체', '수달반', '사자반', '여우반'] as ClassFilter[]).map((filter) => (
+          <Button
+            key={filter}
+            variant={classFilter === filter ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setClassFilter(filter)}
+            className={
+              classFilter === filter
+                ? filter === '수달반' ? 'bg-blue-500 text-white border-0 hover:bg-blue-600'
+                  : filter === '사자반' ? 'bg-orange-500 text-white border-0 hover:bg-orange-600'
+                  : filter === '여우반' ? 'bg-purple-500 text-white border-0 hover:bg-purple-600'
+                  : 'bg-gray-600 text-white border-0 hover:bg-gray-700'
+                : 'border-gray-700 text-gray-300 hover:bg-gray-800'
+            }
+          >
+            {filter}
+          </Button>
+        ))}
+        <span className="ml-auto text-sm text-gray-400 self-center">
+          {filteredTeachers.length}명
+        </span>
+      </div>
+
       <div className="space-y-4">
-        {teachers.map((teacher) => (
+        {filteredTeachers.map((teacher) => (
           <Card key={teacher.id} className="bg-gray-900 border-gray-800">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -274,12 +359,15 @@ export default function AdminTeachers() {
                     <h3 className="text-lg font-semibold text-white">{teacher.nickname}</h3>
                     {getStatusBadge(teacher.status)}
                     <Badge variant="outline" className="border-gray-600 text-gray-400">{teacher.class_name}</Badge>
+                    {teacher.position && (
+                      <Badge variant="outline" className="border-gray-600 text-gray-500">{teacher.position}</Badge>
+                    )}
                   </div>
                   <div className="text-sm text-gray-400">
-                    {teacher.position} · {teacher.tier} · 인원: {teacher.current_students}/{teacher.max_students}
+                    {teacher.detail_intro} · MBTI: {teacher.personality || '-'} · 게임유형: {teacher.teaching_style || '-'} · 인원: {teacher.current_students}/{teacher.max_students}
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <Select value={teacher.status} onValueChange={(v) => updateStatus(teacher.id, v)}>
                     <SelectTrigger className="w-28 bg-gray-800 border-gray-700 text-gray-300">
                       <SelectValue />
@@ -293,11 +381,36 @@ export default function AdminTeachers() {
                   <Button variant="outline" size="sm" onClick={() => handleEdit(teacher)} className="border-gray-700 text-gray-300 hover:bg-gray-800">
                     수정
                   </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="border-red-700 text-red-400 hover:bg-red-900/30">
+                        삭제
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-gray-900 border-gray-800">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-white">선생님 삭제</AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-400">
+                          &apos;{teacher.nickname}&apos; 선생님을 정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700">취소</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete(teacher.id)} className="bg-red-600 text-white hover:bg-red-700">삭제</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             </CardContent>
           </Card>
         ))}
+
+        {filteredTeachers.length === 0 && (
+          <div className="text-center py-12 text-gray-500">
+            등록된 선생님이 없습니다.
+          </div>
+        )}
       </div>
     </div>
   );
