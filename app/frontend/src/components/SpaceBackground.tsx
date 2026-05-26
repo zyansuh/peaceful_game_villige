@@ -63,6 +63,32 @@ export default function SpaceBackground() {
         }}
       />
 
+      {/* Shooting Stars */}
+      <div
+        className="absolute h-[2px] rounded-full bg-gradient-to-r from-transparent via-white to-blue-200"
+        style={{ top: '12%', left: '15%', animation: 'shooting-star 15s ease-out infinite', animationDelay: '0s' }}
+      />
+      <div
+        className="absolute h-[2px] rounded-full bg-gradient-to-r from-transparent via-white to-purple-200"
+        style={{ top: '25%', left: '60%', animation: 'shooting-star 15s ease-out infinite', animationDelay: '2.5s' }}
+      />
+      <div
+        className="absolute h-[1px] rounded-full bg-gradient-to-r from-transparent via-white to-blue-300"
+        style={{ top: '45%', left: '30%', animation: 'shooting-star 15s ease-out infinite', animationDelay: '5s' }}
+      />
+      <div
+        className="absolute h-[2px] rounded-full bg-gradient-to-r from-transparent via-white to-indigo-200"
+        style={{ top: '65%', left: '75%', animation: 'shooting-star 15s ease-out infinite', animationDelay: '7.5s' }}
+      />
+      <div
+        className="absolute h-[1px] rounded-full bg-gradient-to-r from-transparent via-white to-cyan-200"
+        style={{ top: '8%', left: '80%', animation: 'shooting-star 15s ease-out infinite', animationDelay: '10s' }}
+      />
+      <div
+        className="absolute h-[2px] rounded-full bg-gradient-to-r from-transparent via-white to-violet-200"
+        style={{ top: '55%', left: '10%', animation: 'shooting-star 15s ease-out infinite', animationDelay: '12.5s' }}
+      />
+
       {/* Overall subtle overlay to keep it muted */}
       <div className="absolute inset-0 bg-gray-950/40" />
     </div>

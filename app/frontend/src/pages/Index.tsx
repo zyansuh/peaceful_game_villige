@@ -120,6 +120,16 @@ export default function Index() {
         </div>
       </div>
 
+      {/* Graduation Interview Button */}
+      <div className="container mx-auto px-4">
+        <Link to="/graduation-interview" className="block w-full max-w-4xl mx-auto mt-4 mb-12">
+          <div className="bg-gradient-to-r from-purple-600/80 to-blue-600/80 hover:from-purple-500/90 hover:to-blue-500/90 border border-purple-400/30 rounded-xl p-6 text-center transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/20">
+            <h3 className="text-2xl font-bold text-white">📋 졸업면담지 작성</h3>
+            <p className="text-purple-200 mt-1 text-sm">졸업 면담을 작성해주세요</p>
+          </div>
+        </Link>
+      </div>
+
       {/* Notice */}
       <div className="container mx-auto px-4 pb-16">
         <div className="max-w-2xl mx-auto">

@@ -275,6 +275,32 @@
   animation: planet-drift-3 90s ease-in-out infinite;
 }
 
+/* Shooting star animation */
+@keyframes shooting-star {
+  0%, 93% {
+    transform: translateX(0) translateY(0) rotate(-45deg);
+    opacity: 0;
+    width: 0;
+  }
+  94% {
+    opacity: 1;
+    width: 80px;
+  }
+  97% {
+    opacity: 0.6;
+    width: 120px;
+  }
+  100% {
+    transform: translateX(250px) translateY(250px) rotate(-45deg);
+    opacity: 0;
+    width: 0;
+  }
+}
+
+.animate-shooting-star {
+  animation: shooting-star 15s ease-out infinite;
+}
+
 /* Radial gradient utility for nebula blobs */
 .bg-gradient-radial {
   background: radial-gradient(circle, var(--tw-gradient-stops));

@@ -1,0 +1,47 @@
+{
+    "title": "graduation_interviews",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "teacher_id": {
+            "type": "integer",
+            "description": "Assigned teacher ID"
+        },
+        "teacher_name": {
+            "type": "string",
+            "description": "Teacher name for display"
+        },
+        "class_name": {
+            "type": "string",
+            "description": "Class name (수달반/사자반/여우반)"
+        },
+        "answer1": {
+            "type": "string",
+            "description": "Answer to question 1 about content participation"
+        },
+        "answer2": {
+            "type": "string",
+            "description": "Answer to question 2 about impressive people"
+        },
+        "answer3": {
+            "type": "string",
+            "description": "Answer to question 3 about club membership"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "teacher_id",
+        "teacher_name",
+        "class_name",
+        "answer1",
+        "answer2"
+    ]
+}
