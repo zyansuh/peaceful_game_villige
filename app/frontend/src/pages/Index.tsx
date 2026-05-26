@@ -57,10 +57,10 @@ export default function Index() {
           </h1>
           <p className="text-lg md:text-xl text-gray-300 mb-2">🎮 신입 담당선생님 배정 시스템</p>
           <p className="text-gray-400 max-w-lg mx-auto">
-            게임을 함께 즐기고 성장할 수 있는 선생님을 선택하세요!
+            평겜마에서 적응 할 수 있도록 도와주는 분들이 담당선생님입니다.
           </p>
           <p className="text-gray-500 text-sm mt-1">
-            각 반마다 전문 선생님들이 여러분을 기다리고 있습니다.
+            각 반마다 담당 선생님들이 여러분을 기다리고 있습니다.
           </p>
         </div>
       </div>
