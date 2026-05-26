@@ -1,0 +1,55 @@
+{
+    "title": "applications",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID from auth"
+        },
+        "nickname": {
+            "type": "string",
+            "description": "Applicant nickname"
+        },
+        "discord_id": {
+            "type": "string",
+            "description": "Discord ID"
+        },
+        "age": {
+            "type": "integer",
+            "description": "Age"
+        },
+        "game_experience": {
+            "type": "string",
+            "description": "Game experience description"
+        },
+        "teacher_id": {
+            "type": "integer",
+            "description": "Selected teacher ID"
+        },
+        "class_name": {
+            "type": "string",
+            "description": "Class name"
+        },
+        "status": {
+            "type": "string",
+            "description": "Status: pending, approved, rejected"
+        },
+        "admin_memo": {
+            "type": "string",
+            "description": "Admin memo/notes"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "nickname",
+        "discord_id",
+        "teacher_id",
+        "class_name",
+        "status"
+    ]
+}

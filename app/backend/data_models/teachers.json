@@ -1,0 +1,79 @@
+{
+    "title": "teachers",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "game_category": {
+            "type": "string",
+            "description": "Game category: overwatch, pubg, valorant"
+        },
+        "class_name": {
+            "type": "string",
+            "description": "Class name: 수달반, 사자반, 여우반"
+        },
+        "nickname": {
+            "type": "string",
+            "description": "Teacher nickname"
+        },
+        "intro": {
+            "type": "string",
+            "description": "Short introduction"
+        },
+        "detail_intro": {
+            "type": "string",
+            "description": "Detailed introduction"
+        },
+        "tier": {
+            "type": "string",
+            "description": "Game tier/rank"
+        },
+        "active_time": {
+            "type": "string",
+            "description": "Active hours"
+        },
+        "personality": {
+            "type": "string",
+            "description": "Personality description"
+        },
+        "teaching_style": {
+            "type": "string",
+            "description": "Teaching style"
+        },
+        "position": {
+            "type": "string",
+            "description": "Main position/role in game"
+        },
+        "message": {
+            "type": "string",
+            "description": "One-line message"
+        },
+        "profile_image": {
+            "type": "string",
+            "description": "Profile image URL"
+        },
+        "max_students": {
+            "type": "integer",
+            "description": "Maximum number of students"
+        },
+        "current_students": {
+            "type": "integer",
+            "description": "Current number of students"
+        },
+        "status": {
+            "type": "string",
+            "description": "Status: recruiting, closed, resting"
+        }
+    },
+    "required": [
+        "id",
+        "game_category",
+        "class_name",
+        "nickname",
+        "max_students",
+        "current_students",
+        "status"
+    ]
+}
