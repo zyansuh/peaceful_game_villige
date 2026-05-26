@@ -13,7 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Clock, CheckCircle, XCircle, User, RefreshCw, Ban } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, User, RefreshCw, Ban, Star, ClipboardList, BookOpen } from 'lucide-react';
 import client from '@/lib/client';
 
 interface Application {
@@ -34,6 +34,28 @@ interface Teacher {
   game_category: string;
 }
 
+interface Review {
+  id: number;
+  teacher_id: string;
+  teacher_name: string;
+  class_name: string;
+  rating: number;
+  content: string;
+  nickname: string;
+  created_at: string;
+}
+
+interface GraduationInterviewData {
+  id: number;
+  teacher_id: number;
+  teacher_name: string;
+  class_name: string;
+  answer1: string;
+  answer2: string;
+  answer3: string;
+  created_at: string;
+}
+
 export default function MyPage() {
   const navigate = useNavigate();
   const [applications, setApplications] = useState<Application[]>([]);
@@ -42,6 +64,10 @@ export default function MyPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [cancelTarget, setCancelTarget] = useState<Application | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [graduationInterview, setGraduationInterview] = useState<GraduationInterviewData | null>(null);
+  const [interviewLoading, setInterviewLoading] = useState(true);
 
   const fetchData = async () => {
     try {
@@ -70,6 +96,26 @@ export default function MyPage() {
         }
       }
       setTeachers(teacherMap);
+
+      // Fetch user's reviews
+      try {
+        const reviewRes = await client.entities.reviews.list();
+        setReviews(reviewRes?.data || []);
+      } catch {
+        setReviews([]);
+      }
+      setReviewsLoading(false);
+
+      // Fetch user's graduation interview
+      try {
+        const interviewRes = await client.entities.graduation_interviews.list();
+        if (interviewRes?.data && interviewRes.data.length > 0) {
+          setGraduationInterview(interviewRes.data[0] as GraduationInterviewData);
+        }
+      } catch {
+        setGraduationInterview(null);
+      }
+      setInterviewLoading(false);
     } catch (err) {
       console.error('Failed to fetch applications:', err);
     } finally {
@@ -84,6 +130,8 @@ export default function MyPage() {
 
   const handleRefresh = () => {
     setRefreshing(true);
+    setReviewsLoading(true);
+    setInterviewLoading(true);
     fetchData();
   };
 
@@ -157,6 +205,20 @@ export default function MyPage() {
     }
   };
 
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  // Get the active (approved or pending) application for teacher info display
+  const activeApplication = applications.find(
+    (a) => a.status === 'approved' || a.status === 'pending'
+  );
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
@@ -209,9 +271,56 @@ export default function MyPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-6">
+          {/* Assigned Teacher Info */}
+          {activeApplication && teachers[activeApplication.teacher_id] && (
+            <Card className="bg-gray-900 border-gray-800">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center">
+                    <User className="w-4 h-4 text-white" />
+                  </div>
+                  <h2 className="text-lg font-bold text-white">담당 선생님 정보</h2>
+                </div>
+                <div className="bg-gray-800/50 rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">선생님</span>
+                    <span className="text-white font-medium">
+                      {teachers[activeApplication.teacher_id].nickname}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">반</span>
+                    <span className={`font-medium ${getClassColor(teachers[activeApplication.teacher_id].game_category)}`}>
+                      {getClassName(teachers[activeApplication.teacher_id].game_category)}
+                    </span>
+                  </div>
+                  {teachers[activeApplication.teacher_id].position && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">포지션</span>
+                      <span className="text-gray-200">{teachers[activeApplication.teacher_id].position}</span>
+                    </div>
+                  )}
+                  {teachers[activeApplication.teacher_id].tier && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">티어</span>
+                      <span className="text-gray-200">{teachers[activeApplication.teacher_id].tier}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">상태</span>
+                    <Badge className={`${getStatusInfo(activeApplication.status).className} border flex items-center gap-1`}>
+                      {getStatusInfo(activeApplication.status).icon}
+                      {getStatusInfo(activeApplication.status).label}
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Status summary */}
-          <div className="grid grid-cols-4 gap-3 mb-6">
+          <div className="grid grid-cols-4 gap-3">
             <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 text-center">
               <p className="text-2xl font-bold text-yellow-400">
                 {applications.filter(a => a.status === 'pending').length}
@@ -326,6 +435,110 @@ export default function MyPage() {
               </Card>
             );
           })}
+
+          {/* My Reviews Section */}
+          <Card className="bg-gray-900 border-gray-800">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center">
+                  <Star className="w-4 h-4 text-white" />
+                </div>
+                <h2 className="text-lg font-bold text-white">내가 작성한 리뷰</h2>
+              </div>
+
+              {reviewsLoading ? (
+                <p className="text-gray-400 text-center py-4">로딩 중...</p>
+              ) : reviews.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-gray-500 mb-3">아직 작성한 리뷰가 없습니다.</p>
+                  <p className="text-gray-600 text-sm">선생님 프로필에서 댓글을 남겨보세요!</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {reviews.map((review) => (
+                    <div key={review.id} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-white font-medium text-sm">
+                            {review.teacher_name || '선생님'}
+                          </span>
+                          {review.class_name && (
+                            <Badge variant="outline" className="text-xs border-gray-600 text-gray-400">
+                              {review.class_name}
+                            </Badge>
+                          )}
+                        </div>
+                        <span className="text-gray-500 text-xs">{formatDate(review.created_at)}</span>
+                      </div>
+                      <p className="text-gray-300 text-sm leading-relaxed">{review.content}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Graduation Interview Section */}
+          <Card className="bg-gray-900 border-gray-800">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+                  <ClipboardList className="w-4 h-4 text-white" />
+                </div>
+                <h2 className="text-lg font-bold text-white">졸업면담 내역</h2>
+              </div>
+
+              {interviewLoading ? (
+                <p className="text-gray-400 text-center py-4">로딩 중...</p>
+              ) : graduationInterview ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 text-sm text-gray-400 mb-3">
+                    <span>담당: <span className="text-white">{graduationInterview.teacher_name}</span></span>
+                    <span>|</span>
+                    <span>반: <span className="text-white">{graduationInterview.class_name}</span></span>
+                    <span>|</span>
+                    <span>제출일: <span className="text-white">{formatDate(graduationInterview.created_at)}</span></span>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+                      <p className="text-gray-400 text-xs mb-1 font-medium">Q1. 평겜마 콘텐츠 참여 경험</p>
+                      <p className="text-gray-200 text-sm">{graduationInterview.answer1}</p>
+                    </div>
+                    <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+                      <p className="text-gray-400 text-xs mb-1 font-medium">Q2. 인상 깊었던 분</p>
+                      <p className="text-gray-200 text-sm">{graduationInterview.answer2}</p>
+                    </div>
+                    <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+                      <p className="text-gray-400 text-xs mb-1 font-medium">Q3. 동호회 가입 여부</p>
+                      <p className="text-gray-200 text-sm">{graduationInterview.answer3}</p>
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate('/graduation-interview')}
+                    className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10 mt-2"
+                  >
+                    <BookOpen className="w-3 h-3 mr-1" />
+                    수정하기
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center py-6">
+                  <p className="text-gray-500 mb-4">아직 졸업면담지를 작성하지 않으셨습니다.</p>
+                  <Button
+                    onClick={() => navigate('/graduation-interview')}
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0"
+                  >
+                    <ClipboardList className="w-4 h-4 mr-2" />
+                    졸업면담지 작성하기
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       )}
 
