@@ -52,13 +52,13 @@ export default function ClassPage() {
     fetchTeachers();
   }, [classId]);
 
-  // Sort teachers: closed/full teachers go to bottom, then by current_students descending
+  // Sort teachers: closed/full teachers go to bottom, then by remaining spots descending
   const sortedTeachers = useMemo(() => {
     return [...teachers].sort((a, b) => {
       const aIsClosed = a.status === 'closed' || a.current_students >= a.max_students;
       const bIsClosed = b.status === 'closed' || b.current_students >= b.max_students;
       if (aIsClosed !== bIsClosed) return aIsClosed ? 1 : -1;
-      return b.current_students - a.current_students;
+      return (b.max_students - b.current_students) - (a.max_students - a.current_students);
     });
   }, [teachers]);
 
