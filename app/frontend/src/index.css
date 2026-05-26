@@ -275,30 +275,26 @@
   animation: planet-drift-3 90s ease-in-out infinite;
 }
 
-/* Shooting star animation */
-@keyframes shooting-star {
-  0%, 93% {
-    transform: translateX(0) translateY(0) rotate(-45deg);
-    opacity: 0;
-    width: 0;
-  }
-  94% {
-    opacity: 1;
-    width: 80px;
-  }
-  97% {
-    opacity: 0.6;
-    width: 120px;
+/* Solar system orbit animation */
+@keyframes solar-orbit {
+  0% {
+    transform: rotate(0deg) translateX(var(--orbit-radius)) rotate(0deg);
   }
   100% {
-    transform: translateX(250px) translateY(250px) rotate(-45deg);
-    opacity: 0;
-    width: 0;
+    transform: rotate(360deg) translateX(var(--orbit-radius)) rotate(-360deg);
   }
 }
 
-.animate-shooting-star {
-  animation: shooting-star 15s ease-out infinite;
+/* Sun pulse animation */
+@keyframes sun-pulse {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.22;
+    transform: scale(1.05);
+  }
 }
 
 /* Radial gradient utility for nebula blobs */

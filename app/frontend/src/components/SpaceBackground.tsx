@@ -63,31 +63,102 @@ export default function SpaceBackground() {
         }}
       />
 
-      {/* Shooting Stars */}
+      {/* Subtle Solar System */}
       <div
-        className="absolute h-[2px] rounded-full bg-gradient-to-r from-transparent via-white to-blue-200"
-        style={{ top: '12%', left: '15%', animation: 'shooting-star 15s ease-out infinite', animationDelay: '0s' }}
-      />
-      <div
-        className="absolute h-[2px] rounded-full bg-gradient-to-r from-transparent via-white to-purple-200"
-        style={{ top: '25%', left: '60%', animation: 'shooting-star 15s ease-out infinite', animationDelay: '2.5s' }}
-      />
-      <div
-        className="absolute h-[1px] rounded-full bg-gradient-to-r from-transparent via-white to-blue-300"
-        style={{ top: '45%', left: '30%', animation: 'shooting-star 15s ease-out infinite', animationDelay: '5s' }}
-      />
-      <div
-        className="absolute h-[2px] rounded-full bg-gradient-to-r from-transparent via-white to-indigo-200"
-        style={{ top: '65%', left: '75%', animation: 'shooting-star 15s ease-out infinite', animationDelay: '7.5s' }}
-      />
-      <div
-        className="absolute h-[1px] rounded-full bg-gradient-to-r from-transparent via-white to-cyan-200"
-        style={{ top: '8%', left: '80%', animation: 'shooting-star 15s ease-out infinite', animationDelay: '10s' }}
-      />
-      <div
-        className="absolute h-[2px] rounded-full bg-gradient-to-r from-transparent via-white to-violet-200"
-        style={{ top: '55%', left: '10%', animation: 'shooting-star 15s ease-out infinite', animationDelay: '12.5s' }}
-      />
+        className="absolute"
+        style={{
+          bottom: '15%',
+          right: '10%',
+          width: '200px',
+          height: '200px',
+          opacity: 0.35,
+        }}
+      >
+        {/* Sun */}
+        <div
+          className="absolute rounded-full"
+          style={{
+            width: '24px',
+            height: '24px',
+            top: '50%',
+            left: '50%',
+            marginTop: '-12px',
+            marginLeft: '-12px',
+            background: 'radial-gradient(circle at 40% 40%, rgba(251, 191, 36, 0.8), rgba(245, 158, 11, 0.4) 60%, transparent 100%)',
+            animation: 'sun-pulse 8s ease-in-out infinite',
+            filter: 'blur(1px)',
+          }}
+        />
+        {/* Planet 1 - small blue */}
+        <div
+          className="absolute"
+          style={{
+            width: '6px',
+            height: '6px',
+            top: '50%',
+            left: '50%',
+            marginTop: '-3px',
+            marginLeft: '-3px',
+            '--orbit-radius': '40px',
+            animation: 'solar-orbit 60s linear infinite',
+          } as React.CSSProperties}
+        >
+          <div
+            className="rounded-full"
+            style={{
+              width: '6px',
+              height: '6px',
+              background: 'radial-gradient(circle, rgba(96, 165, 250, 0.9), rgba(59, 130, 246, 0.5) 70%, transparent 100%)',
+            }}
+          />
+        </div>
+        {/* Planet 2 - tiny orange */}
+        <div
+          className="absolute"
+          style={{
+            width: '5px',
+            height: '5px',
+            top: '50%',
+            left: '50%',
+            marginTop: '-2.5px',
+            marginLeft: '-2.5px',
+            '--orbit-radius': '65px',
+            animation: 'solar-orbit 90s linear infinite',
+          } as React.CSSProperties}
+        >
+          <div
+            className="rounded-full"
+            style={{
+              width: '5px',
+              height: '5px',
+              background: 'radial-gradient(circle, rgba(251, 146, 60, 0.9), rgba(249, 115, 22, 0.5) 70%, transparent 100%)',
+            }}
+          />
+        </div>
+        {/* Planet 3 - tiny purple */}
+        <div
+          className="absolute"
+          style={{
+            width: '4px',
+            height: '4px',
+            top: '50%',
+            left: '50%',
+            marginTop: '-2px',
+            marginLeft: '-2px',
+            '--orbit-radius': '90px',
+            animation: 'solar-orbit 120s linear infinite',
+          } as React.CSSProperties}
+        >
+          <div
+            className="rounded-full"
+            style={{
+              width: '4px',
+              height: '4px',
+              background: 'radial-gradient(circle, rgba(167, 139, 250, 0.9), rgba(139, 92, 246, 0.5) 70%, transparent 100%)',
+            }}
+          />
+        </div>
+      </div>
 
       {/* Overall subtle overlay to keep it muted */}
       <div className="absolute inset-0 bg-gray-950/40" />
