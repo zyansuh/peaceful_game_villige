@@ -51,13 +51,6 @@ export default function Index() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <div className="relative overflow-hidden py-16 md:py-24">
-        {/* Background decorative text */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-          <p className="text-[4rem] md:text-[6rem] font-black text-gray-800/20 whitespace-nowrap tracking-wider">
-            게이밍 아카데미에 오신걸 환영합니다!
-          </p>
-        </div>
-
         <div className="relative z-10 text-center px-4">
           <h1 className="text-4xl md:text-6xl font-black mb-4 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
             평화로운게임마을
