@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import AdminPasswordGate from '@/components/AdminPasswordGate';
 import client from '@/lib/client';
 
 interface Application {
@@ -84,13 +85,16 @@ export default function AdminApplications() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-12 text-center">
-        <p className="text-gray-400">로딩 중...</p>
-      </div>
+      <AdminPasswordGate>
+        <div className="container mx-auto px-4 py-12 text-center">
+          <p className="text-gray-400">로딩 중...</p>
+        </div>
+      </AdminPasswordGate>
     );
   }
 
   return (
+    <AdminPasswordGate>
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold text-white">신청 관리</h1>
@@ -162,5 +166,6 @@ export default function AdminApplications() {
         </div>
       )}
     </div>
+    </AdminPasswordGate>
   );
 }

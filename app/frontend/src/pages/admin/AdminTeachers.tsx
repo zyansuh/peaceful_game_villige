@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import AdminPasswordGate from '@/components/AdminPasswordGate';
 import client from '@/lib/client';
 
 interface Teacher {
@@ -211,13 +212,16 @@ export default function AdminTeachers() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-12 text-center">
-        <p className="text-gray-400">로딩 중...</p>
-      </div>
+      <AdminPasswordGate>
+        <div className="container mx-auto px-4 py-12 text-center">
+          <p className="text-gray-400">로딩 중...</p>
+        </div>
+      </AdminPasswordGate>
     );
   }
 
   return (
+    <AdminPasswordGate>
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold text-white">선생님 관리</h1>
@@ -413,5 +417,6 @@ export default function AdminTeachers() {
         )}
       </div>
     </div>
+    </AdminPasswordGate>
   );
 }
