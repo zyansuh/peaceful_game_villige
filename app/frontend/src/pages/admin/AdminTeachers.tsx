@@ -95,7 +95,7 @@ export default function AdminTeachers() {
       try {
         const userRes = await client.auth.me();
         if (!userRes?.data) {
-          client.auth.toLogin();
+          window.location.href = '/login';
           return;
         }
         setAdminEmail(userRes.data.email || 'admin');

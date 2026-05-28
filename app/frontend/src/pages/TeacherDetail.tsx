@@ -321,7 +321,7 @@ export default function TeacherDetail() {
             <div className="mb-8 p-5 rounded-lg border border-gray-700 bg-gray-800/30 text-center">
               <p className="text-gray-400">로그인 후 리뷰를 작성할 수 있습니다</p>
               <Button
-                onClick={() => client.auth.toLogin()}
+                onClick={() => window.location.href = '/login'}
                 className="mt-3 bg-gray-700 hover:bg-gray-600 text-white border-0"
               >
                 로그인

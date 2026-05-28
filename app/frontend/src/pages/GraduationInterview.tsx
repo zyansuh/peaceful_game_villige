@@ -165,7 +165,7 @@ export default function GraduationInterview() {
             <h2 className="text-xl font-bold text-white mb-2">로그인이 필요합니다</h2>
             <p className="text-gray-400 mb-6">졸업면담지를 작성하려면 로그인해주세요.</p>
             <Button
-              onClick={() => client.auth.toLogin()}
+              onClick={() => window.location.href = '/login'}
               className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0"
             >
               로그인하기

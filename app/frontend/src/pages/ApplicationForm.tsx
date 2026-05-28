@@ -39,7 +39,7 @@ export default function ApplicationForm() {
       try {
         const userRes = await client.auth.me();
         if (!userRes?.data) {
-          client.auth.toLogin();
+          window.location.href = '/login';
           return;
         }
         setUser(userRes.data);
@@ -71,7 +71,7 @@ export default function ApplicationForm() {
           game_experience: form.game_experience,
           teacher_id: teacher.id,
           class_name: teacher.class_name,
-          status: 'pending',
+          status: 'approved',
         },
       });
       navigate(`/apply-complete?teacher=${encodeURIComponent(teacher.nickname)}&class=${encodeURIComponent(teacher.game_category || '')}&position=${encodeURIComponent(teacher.position || '')}&tier=${encodeURIComponent(teacher.tier || '')}`);

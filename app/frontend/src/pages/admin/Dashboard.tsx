@@ -67,7 +67,7 @@ export default function Dashboard() {
       try {
         const userRes = await client.auth.me();
         if (!userRes?.data) {
-          client.auth.toLogin();
+          window.location.href = '/login';
           return;
         }
 

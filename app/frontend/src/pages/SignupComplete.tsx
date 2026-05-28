@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
-import client from '@/lib/client';
 
 export default function SignupComplete() {
   return (
@@ -24,7 +23,7 @@ export default function SignupComplete() {
 
           <div className="space-y-3">
             <Button
-              onClick={() => client.auth.toLogin()}
+              onClick={() => window.location.href = '/login'}
               className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 h-11 font-medium"
             >
               로그인하기

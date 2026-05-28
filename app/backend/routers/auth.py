@@ -20,16 +20,24 @@ from dependencies.auth import get_current_user
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
 from models.auth import User
+from models.members import Members
+from pydantic import BaseModel
 from schemas.auth import (
     PlatformTokenExchangeRequest,
     TokenExchangeResponse,
     UserResponse,
 )
 from services.auth import AuthService
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
 logger = logging.getLogger(__name__)
+
+
+class MemberLoginRequest(BaseModel):
+    username: str
+    password: str
 
 
 def _local_patch(url: str) -> str:
@@ -306,6 +314,38 @@ async def exchange_platform_token(
     return TokenExchangeResponse(
         token=app_token,
     )
+
+
+@router.post("/member-login")
+async def member_login(
+    data: MemberLoginRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Login with member nickname and password."""
+    logger.info(f"[member-login] Attempting login for username: {data.username}")
+
+    # Query members table for matching username and password
+    stmt = select(Members).where(
+        Members.username == data.username,
+        Members.password == data.password,
+    )
+    result = await db.execute(stmt)
+    member = result.scalars().first()
+
+    if not member:
+        logger.warning(f"[member-login] Failed login attempt for username: {data.username}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="닉네임 또는 비밀번호가 올바르지 않습니다.",
+        )
+
+    # Create user object and issue JWT token
+    user = User(id=str(member.id), email="", name=member.username, role="user")
+    auth_service = AuthService(db)
+    app_token, expires_at, _ = await auth_service.issue_app_token(user=user)
+
+    logger.info(f"[member-login] Login successful for user_id={member.id}, username={member.username}")
+    return {"token": app_token}
 
 
 @router.get("/me", response_model=UserResponse)

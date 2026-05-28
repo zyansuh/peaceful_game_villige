@@ -145,7 +145,7 @@ export default function Signup() {
             <p className="text-gray-500 text-sm">
               이미 계정이 있으신가요?{' '}
               <button
-                onClick={() => client.auth.toLogin()}
+                onClick={() => window.location.href = '/login'}
                 className="text-purple-400 hover:text-purple-300 font-medium"
               >
                 로그인

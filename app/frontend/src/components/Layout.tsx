@@ -27,11 +27,11 @@ export default function Layout({ children }: LayoutProps) {
   }, []);
 
   const handleLogin = () => {
-    client.auth.toLogin();
+    navigate('/login');
   };
 
-  const handleLogout = async () => {
-    await client.auth.logout();
+  const handleLogout = () => {
+    localStorage.removeItem('token');
     setUser(null);
     navigate('/');
   };

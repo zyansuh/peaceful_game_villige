@@ -12,6 +12,7 @@ import AdminApplications from "./pages/admin/AdminApplications";
 import AdminTeachers from "./pages/admin/AdminTeachers";
 import AdminInterviews from "./pages/admin/AdminInterviews";
 import AuthCallback from "./pages/AuthCallback";
+import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import SignupComplete from "./pages/SignupComplete";
 import InterviewComplete from "./pages/InterviewComplete";
@@ -33,6 +34,7 @@ function App() {
           <Route path="/admin/teachers" element={<AdminTeachers />} />
           <Route path="/admin/interviews" element={<AdminInterviews />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/signup-complete" element={<SignupComplete />} />
           <Route path="/interview-complete" element={<InterviewComplete />} />
