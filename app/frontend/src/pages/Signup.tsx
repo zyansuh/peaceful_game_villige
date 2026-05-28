@@ -46,7 +46,7 @@ export default function Signup() {
     try {
       // Store the registration data via backend API
       await client.apiCall.invoke({
-        url: '/api/v1/members/register',
+        url: '/api/v1/entities/members/register',
         method: 'POST',
         data: {
           username: username.trim(),
