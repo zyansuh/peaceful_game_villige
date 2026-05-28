@@ -105,9 +105,9 @@ export default function InterviewComplete() {
             </p>
           </div>
 
-          <Link to="/">
+          <Link to="/mypage">
             <Button className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0 h-12 text-base font-semibold">
-              🏠 메인으로 돌아가기
+              📋 마이페이지에서 확인하기
             </Button>
           </Link>
         </CardContent>

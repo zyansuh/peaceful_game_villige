@@ -139,7 +139,7 @@ export default function GraduationInterview() {
           data: payload,
         });
       }
-      navigate('/interview-complete');
+      navigate('/mypage');
     } catch (err) {
       console.error('Failed to submit interview:', err);
       alert('제출 중 오류가 발생했습니다. 다시 시도해주세요.');
