@@ -13,7 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Clock, CheckCircle, XCircle, User, RefreshCw, Ban, Star, ClipboardList, BookOpen } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, User, RefreshCw, Ban, Star, ClipboardList, BookOpen, Gamepad2 } from 'lucide-react';
 import client from '@/lib/client';
 
 interface Application {
@@ -272,6 +272,39 @@ export default function MyPage() {
         </Card>
       ) : (
         <div className="space-y-6">
+          {/* My Game Info - Prominent Section */}
+          {(() => {
+            const latestApp = applications[0];
+            if (!latestApp) return null;
+            return (
+              <Card className="relative overflow-hidden bg-gray-900 border-0">
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20 rounded-xl" />
+                <div className="absolute inset-[1px] bg-gray-900 rounded-xl" />
+                <CardContent className="relative p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/25">
+                      <Gamepad2 className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-white">내 게임 정보</h2>
+                      <p className="text-xs text-gray-400">신청 시 등록한 게임 정보</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-lg p-4">
+                      <p className="text-xs text-cyan-400 font-medium mb-1">게임 아이디</p>
+                      <p className="text-white text-lg font-bold truncate">{latestApp.nickname}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg p-4">
+                      <p className="text-xs text-blue-400 font-medium mb-1">디스코드</p>
+                      <p className="text-white text-lg font-bold truncate">{latestApp.discord_id}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })()}
+
           {/* Assigned Teacher Info */}
           {activeApplication && teachers[activeApplication.teacher_id] && (
             <Card className="bg-gray-900 border-gray-800">

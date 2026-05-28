@@ -29,3 +29,5 @@
 - 2026-05-26: Backend logic added - application creation now increments teacher's current_students and auto-closes when full
 - 2026-05-26: Added admin activity logging - admin_logs table + logging on teacher CRUD + dashboard activity feed
 - 2026-05-26: Added signup page with 4-digit numeric password validation + backend member registration endpoint
+- 2026-05-28: Fixed signup - added /register endpoint to members router + corrected frontend API path
+- 2026-05-28: Added "내 게임 정보" section to MyPage showing game ID and Discord from application
