@@ -514,12 +514,27 @@ export default function MyPage() {
           {/* Graduation Interview Section */}
           <Card className="bg-gray-900 border-gray-800">
             <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-2">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
                   <ClipboardList className="w-4 h-4 text-white" />
                 </div>
                 <h2 className="text-lg font-bold text-white">졸업면담 내역</h2>
+                {graduationInterview && (
+                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30 border flex items-center gap-1 ml-2">
+                    <CheckCircle className="w-3 h-3" />
+                    제출완료
+                  </Badge>
+                )}
               </div>
+
+              {graduationInterview && (
+                <div className="flex items-center gap-2 mb-4 ml-10 px-3 py-2 bg-green-500/10 border border-green-500/20 rounded-lg w-fit">
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+                  <span className="text-green-300 font-semibold text-sm">
+                    {formatDate(graduationInterview.created_at)} 제출
+                  </span>
+                </div>
+              )}
 
               {interviewLoading ? (
                 <p className="text-gray-400 text-center py-4">로딩 중...</p>
@@ -529,8 +544,6 @@ export default function MyPage() {
                     <span>담당: <span className="text-white">{graduationInterview.teacher_name}</span></span>
                     <span>|</span>
                     <span>반: <span className="text-white">{graduationInterview.class_name}</span></span>
-                    <span>|</span>
-                    <span>제출일: <span className="text-white">{formatDate(graduationInterview.created_at)}</span></span>
                   </div>
 
                   <div className="space-y-3">

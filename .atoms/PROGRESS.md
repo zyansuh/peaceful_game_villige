@@ -32,3 +32,4 @@
 - 2026-05-28: Fixed signup - added /register endpoint to members router + corrected frontend API path
 - 2026-05-28: Added "내 게임 정보" section to MyPage showing game ID and Discord from application
 - 2026-05-28: Graduation interview submission now redirects to MyPage for immediate confirmation
+- 2026-05-28: Added green '제출완료' badge and prominent submission date to MyPage graduation interview section
