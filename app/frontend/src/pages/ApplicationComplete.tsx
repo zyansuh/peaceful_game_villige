@@ -136,11 +136,18 @@ export default function ApplicationComplete() {
             </p>
           </div>
 
-          <Link to="/">
-            <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 h-12 text-base font-semibold">
-              🏠 메인으로 돌아가기
-            </Button>
-          </Link>
+          <div className="flex flex-col gap-3">
+            <Link to="/">
+              <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 h-12 text-base font-semibold">
+                🏠 메인으로 돌아가기
+              </Button>
+            </Link>
+            <Link to="/mypage">
+              <Button variant="outline" className="w-full border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-white h-12 text-base font-semibold">
+                📄 마이페이지에서 확인하기
+              </Button>
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>
