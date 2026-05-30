@@ -12,6 +12,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
+  Legend,
 } from 'recharts';
 
 interface AdminLog {
@@ -60,6 +61,7 @@ export default function Dashboard() {
   const [logs, setLogs] = useState<AdminLog[]>([]);
   const [newInterviewCount, setNewInterviewCount] = useState(0);
   const [interviewChartData, setInterviewChartData] = useState<{ month: string; count: number }[]>([]);
+  const [applicationChartData, setApplicationChartData] = useState<{ month: string; 수달반: number; 사자반: number; 여우반: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -91,6 +93,37 @@ export default function Dashboard() {
           foxCount: apps.filter((a: any) => a.class_name === '여우반').length,
           remainingSlots: remaining,
         });
+
+        // Build monthly application chart data (last 6 months, grouped by class)
+        const now2 = new Date();
+        const appMonthKeys: string[] = [];
+        const appMonthMap: Record<string, { 수달반: number; 사자반: number; 여우반: number }> = {};
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date(now2.getFullYear(), now2.getMonth() - i, 1);
+          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          appMonthKeys.push(key);
+          appMonthMap[key] = { 수달반: 0, 사자반: 0, 여우반: 0 };
+        }
+
+        apps.forEach((app: any) => {
+          if (!app.created_at) return;
+          const createdAt = new Date(app.created_at);
+          const key = `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, '0')}`;
+          if (key in appMonthMap) {
+            const className = app.class_name as string;
+            if (className === '수달반') appMonthMap[key].수달반++;
+            else if (className === '사자반') appMonthMap[key].사자반++;
+            else if (className === '여우반') appMonthMap[key].여우반++;
+          }
+        });
+
+        const appChartData = appMonthKeys.map((key) => ({
+          month: `${parseInt(key.split('-')[1])}월`,
+          수달반: appMonthMap[key].수달반,
+          사자반: appMonthMap[key].사자반,
+          여우반: appMonthMap[key].여우반,
+        }));
+        setApplicationChartData(appChartData);
 
         // Fetch admin logs
         const logsRes = await client.entities.admin_logs.query({ query: {}, sort: '-created_at', limit: 10 });
@@ -221,6 +254,50 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Monthly Application Statistics Chart */}
+        {applicationChartData.length > 0 && (
+          <Card className="bg-gray-900 border-gray-800 mb-8">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold text-white mb-4">📊 월간 신청 통계</h2>
+              <div className="h-56">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={applicationChartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                      axisLine={{ stroke: '#4B5563' }}
+                      tickLine={{ stroke: '#4B5563' }}
+                    />
+                    <YAxis
+                      allowDecimals={false}
+                      tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                      axisLine={{ stroke: '#4B5563' }}
+                      tickLine={{ stroke: '#4B5563' }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#1F2937',
+                        border: '1px solid #374151',
+                        borderRadius: '8px',
+                        color: '#F3F4F6',
+                      }}
+                      labelStyle={{ color: '#D1D5DB' }}
+                      formatter={(value: number, name: string) => [`${value}건`, name]}
+                    />
+                    <Legend
+                      wrapperStyle={{ color: '#D1D5DB', fontSize: 12 }}
+                    />
+                    <Bar dataKey="수달반" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="사자반" fill="#F97316" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="여우반" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Interview Submission Trend Chart */}
         {interviewChartData.length > 0 && (

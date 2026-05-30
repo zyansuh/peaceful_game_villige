@@ -33,3 +33,5 @@
 - 2026-05-28: Added "내 게임 정보" section to MyPage showing game ID and Discord from application
 - 2026-05-28: Graduation interview submission now redirects to MyPage for immediate confirmation
 - 2026-05-28: Added green '제출완료' badge and prominent submission date to MyPage graduation interview section
+- 2026-05-30: Application form now redirects directly to MyPage after submission for immediate sync
+- 2026-05-30: Added monthly application statistics chart to admin dashboard (per-class grouped bar chart)
