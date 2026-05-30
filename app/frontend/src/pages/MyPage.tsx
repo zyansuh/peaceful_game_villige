@@ -78,7 +78,7 @@ export default function MyPage() {
       }
 
       // Fetch user's applications
-      const appRes = await client.entities.applications.list();
+      const appRes = await client.entities.applications.queryAll({ query: {} });
       const appList = appRes?.data || [];
       setApplications(appList);
 
@@ -99,7 +99,7 @@ export default function MyPage() {
 
       // Fetch user's reviews
       try {
-        const reviewRes = await client.entities.reviews.list();
+        const reviewRes = await client.entities.reviews.queryAll({ query: {} });
         setReviews(reviewRes?.data || []);
       } catch {
         setReviews([]);
@@ -108,7 +108,7 @@ export default function MyPage() {
 
       // Fetch user's graduation interview
       try {
-        const interviewRes = await client.entities.graduation_interviews.list();
+        const interviewRes = await client.entities.graduation_interviews.queryAll({ query: {} });
         if (interviewRes?.data && interviewRes.data.length > 0) {
           setGraduationInterview(interviewRes.data[0] as GraduationInterviewData);
         }
