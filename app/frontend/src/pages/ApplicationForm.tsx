@@ -2,9 +2,6 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import client from '@/lib/client';
 
 interface Teacher {
@@ -26,13 +23,6 @@ export default function ApplicationForm() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [user, setUser] = useState<any>(null);
-
-  const [form, setForm] = useState({
-    nickname: '',
-    discord_id: '',
-    age: '',
-    game_experience: '',
-  });
 
   useEffect(() => {
     const init = async () => {
@@ -63,12 +53,13 @@ export default function ApplicationForm() {
 
     setSubmitting(true);
     try {
+      const username = user.username || user.email || '';
       await client.entities.applications.create({
         data: {
-          nickname: form.nickname,
-          discord_id: form.discord_id,
-          age: parseInt(form.age) || 0,
-          game_experience: form.game_experience,
+          nickname: username,
+          discord_id: '',
+          age: 0,
+          game_experience: '',
           teacher_id: teacher.id,
           class_name: teacher.class_name,
           status: 'approved',
@@ -114,56 +105,16 @@ export default function ApplicationForm() {
             <p className="text-gray-400 text-sm">{teacher.class_name}</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <Label htmlFor="nickname" className="text-gray-300">닉네임</Label>
-              <Input
-                id="nickname"
-                value={form.nickname}
-                onChange={(e) => setForm({ ...form, nickname: e.target.value })}
-                placeholder="게임 내 닉네임을 입력해주세요"
-                required
-                className="bg-gray-800 border-gray-700 text-white mt-1"
-              />
-            </div>
+          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 mb-6">
+            <p className="text-gray-400 text-sm mb-1">신청자</p>
+            <p className="text-white text-lg font-semibold">{user?.username || user?.email || '로그인 사용자'}</p>
+          </div>
 
-            <div>
-              <Label htmlFor="discord_id" className="text-gray-300">디스코드 아이디</Label>
-              <Input
-                id="discord_id"
-                value={form.discord_id}
-                onChange={(e) => setForm({ ...form, discord_id: e.target.value })}
-                placeholder="예: username#1234"
-                required
-                className="bg-gray-800 border-gray-700 text-white mt-1"
-              />
-            </div>
+          <p className="text-center text-gray-300 mb-6 text-base">
+            아래 선생님에게 신청하시겠습니까?
+          </p>
 
-            <div>
-              <Label htmlFor="age" className="text-gray-300">나이</Label>
-              <Input
-                id="age"
-                type="number"
-                value={form.age}
-                onChange={(e) => setForm({ ...form, age: e.target.value })}
-                placeholder="나이를 입력해주세요"
-                required
-                className="bg-gray-800 border-gray-700 text-white mt-1"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="game_experience" className="text-gray-300">게임 경력</Label>
-              <Textarea
-                id="game_experience"
-                value={form.game_experience}
-                onChange={(e) => setForm({ ...form, game_experience: e.target.value })}
-                placeholder="게임 경력이나 경험을 간단히 적어주세요"
-                rows={3}
-                className="bg-gray-800 border-gray-700 text-white mt-1"
-              />
-            </div>
-
+          <form onSubmit={handleSubmit}>
             <Button
               type="submit"
               disabled={submitting}
