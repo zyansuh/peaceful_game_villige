@@ -71,15 +71,29 @@ export default function MyPage() {
 
   const fetchData = async () => {
     try {
-      const userRes = await client.auth.me();
+      let userRes;
+      try {
+        userRes = await client.auth.me();
+      } catch {
+        window.location.href = '/login';
+        return;
+      }
       if (!userRes?.data) {
         window.location.href = '/login';
         return;
       }
 
-      // Fetch user's applications
-      const appRes = await client.entities.applications.queryAll({ query: {} });
-      const appList = appRes?.data || [];
+      // Fetch user's applications (safely check if entity exists)
+      let appList: Application[] = [];
+      try {
+        if (client.entities?.applications?.queryAll) {
+          const appRes = await client.entities.applications.queryAll({ query: {} });
+          appList = Array.isArray(appRes?.data) ? appRes.data : [];
+        }
+      } catch (e) {
+        console.error('Failed to fetch applications:', e);
+        appList = [];
+      }
       setApplications(appList);
 
       // Fetch teacher details for each application
@@ -96,31 +110,44 @@ export default function MyPage() {
         }
       }
       setTeachers(teacherMap);
-
-      // Fetch user's reviews
-      try {
-        const reviewRes = await client.entities.reviews.queryAll({ query: {} });
-        setReviews(reviewRes?.data || []);
-      } catch {
-        setReviews([]);
-      }
-      setReviewsLoading(false);
-
-      // Fetch user's graduation interview
-      try {
-        const interviewRes = await client.entities.graduation_interviews.queryAll({ query: {} });
-        if (interviewRes?.data && interviewRes.data.length > 0) {
-          setGraduationInterview(interviewRes.data[0] as GraduationInterviewData);
-        }
-      } catch {
-        setGraduationInterview(null);
-      }
-      setInterviewLoading(false);
     } catch (err) {
-      console.error('Failed to fetch applications:', err);
+      console.error('Failed to fetch data:', err);
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+
+    // Fetch reviews independently (safely check if entity exists)
+    try {
+      if (client.entities?.reviews?.queryAll) {
+        const reviewRes = await client.entities.reviews.queryAll({ query: {} });
+        setReviews(Array.isArray(reviewRes?.data) ? reviewRes.data : []);
+      } else {
+        setReviews([]);
+      }
+    } catch {
+      setReviews([]);
+    } finally {
+      setReviewsLoading(false);
+    }
+
+    // Fetch graduation interview independently (safely check if entity exists)
+    try {
+      if (client.entities?.graduation_interviews?.queryAll) {
+        const interviewRes = await client.entities.graduation_interviews.queryAll({ query: {} });
+        const data = Array.isArray(interviewRes?.data) ? interviewRes.data : [];
+        if (data.length > 0) {
+          setGraduationInterview(data[0] as GraduationInterviewData);
+        } else {
+          setGraduationInterview(null);
+        }
+      } else {
+        setGraduationInterview(null);
+      }
+    } catch {
+      setGraduationInterview(null);
+    } finally {
+      setInterviewLoading(false);
     }
   };
 
