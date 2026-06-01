@@ -35,3 +35,4 @@
 - 2026-05-28: Added green '제출완료' badge and prominent submission date to MyPage graduation interview section
 - 2026-05-30: Application form now redirects directly to MyPage after submission for immediate sync
 - 2026-05-30: Added monthly application statistics chart to admin dashboard (per-class grouped bar chart)
+- 2026-06-01: Fixed SDK method calls - replaced list()/queryAll() with query() for proper API compatibility, fixed response parsing for {items:[]} format, fixed graduation_interviews.update() to use correct SDK signature

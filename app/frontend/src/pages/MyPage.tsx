@@ -83,12 +83,15 @@ export default function MyPage() {
         return;
       }
 
-      // Fetch user's applications (safely check if entity exists)
+      // Fetch user's applications
       let appList: Application[] = [];
       try {
-        if (client.entities?.applications?.queryAll) {
-          const appRes = await client.entities.applications.queryAll({ query: {} });
-          appList = Array.isArray(appRes?.data) ? appRes.data : [];
+        const appRes = await client.entities.applications.query({ query: {}, sort: '-created_at', limit: 100 });
+        const rawData = appRes?.data;
+        if (rawData?.items && Array.isArray(rawData.items)) {
+          appList = rawData.items;
+        } else if (Array.isArray(rawData)) {
+          appList = rawData;
         }
       } catch (e) {
         console.error('Failed to fetch applications:', e);
@@ -117,30 +120,24 @@ export default function MyPage() {
       setRefreshing(false);
     }
 
-    // Fetch reviews independently (safely check if entity exists)
+    // Fetch reviews independently
     try {
-      if (client.entities?.reviews?.queryAll) {
-        const reviewRes = await client.entities.reviews.queryAll({ query: {} });
-        setReviews(Array.isArray(reviewRes?.data) ? reviewRes.data : []);
-      } else {
-        setReviews([]);
-      }
+      const reviewRes = await client.entities.reviews.query({ query: {} });
+      const reviewData = reviewRes?.data?.items || reviewRes?.data || [];
+      setReviews(Array.isArray(reviewData) ? reviewData : []);
     } catch {
       setReviews([]);
     } finally {
       setReviewsLoading(false);
     }
 
-    // Fetch graduation interview independently (safely check if entity exists)
+    // Fetch graduation interview independently
     try {
-      if (client.entities?.graduation_interviews?.queryAll) {
-        const interviewRes = await client.entities.graduation_interviews.queryAll({ query: {} });
-        const data = Array.isArray(interviewRes?.data) ? interviewRes.data : [];
-        if (data.length > 0) {
-          setGraduationInterview(data[0] as GraduationInterviewData);
-        } else {
-          setGraduationInterview(null);
-        }
+      const interviewRes = await client.entities.graduation_interviews.query({ query: {} });
+      const interviewData = interviewRes?.data?.items || interviewRes?.data || [];
+      const dataArr = Array.isArray(interviewData) ? interviewData : [];
+      if (dataArr.length > 0) {
+        setGraduationInterview(dataArr[0] as GraduationInterviewData);
       } else {
         setGraduationInterview(null);
       }

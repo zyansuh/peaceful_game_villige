@@ -55,9 +55,10 @@ export default function GraduationInterview() {
         setLoggedIn(true);
 
         // Check if already submitted
-        const existingRes = await client.entities.graduation_interviews.list();
-        if (existingRes?.data && existingRes.data.length > 0) {
-          const existing = existingRes.data[0] as ExistingInterview;
+        const existingRes = await client.entities.graduation_interviews.query({ query: {} });
+        const existingItems = existingRes?.data?.items || existingRes?.data || [];
+        if (Array.isArray(existingItems) && existingItems.length > 0) {
+          const existing = existingItems[0] as ExistingInterview;
           setExistingInterview(existing);
           setIsEditMode(true);
           setAnswer1(existing.answer1 || '');
@@ -83,8 +84,9 @@ export default function GraduationInterview() {
         }
 
         // Fetch user's applications
-        const appRes = await client.entities.applications.list();
-        const apps: Application[] = appRes?.data || [];
+        const appRes = await client.entities.applications.query({ query: {} });
+        const appItems = appRes?.data?.items || appRes?.data || [];
+        const apps: Application[] = Array.isArray(appItems) ? appItems : [];
         const approvedApp = apps.find((a) => a.status === 'approved') || apps[0];
 
         if (!approvedApp) {
@@ -131,7 +133,8 @@ export default function GraduationInterview() {
       };
 
       if (isEditMode && existingInterview) {
-        await client.entities.graduation_interviews.update(existingInterview.id, {
+        await client.entities.graduation_interviews.update({
+          id: String(existingInterview.id),
           data: payload,
         });
       } else {
