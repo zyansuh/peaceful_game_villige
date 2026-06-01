@@ -45,6 +45,7 @@ export default function TeacherDetail() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [hasExistingApplication, setHasExistingApplication] = useState(false);
 
   // Review form state
   const [reviewContent, setReviewContent] = useState('');
@@ -98,11 +99,30 @@ export default function TeacherDetail() {
     }
   }, []);
 
+  const checkExistingApplication = useCallback(async () => {
+    if (!user) return;
+    try {
+      const res = await client.entities.applications.query({
+        query: JSON.stringify({ user_id: user.id }),
+        limit: 1,
+      });
+      if (res?.data?.items?.length > 0) {
+        setHasExistingApplication(true);
+      }
+    } catch (err) {
+      console.error('Failed to check existing application:', err);
+    }
+  }, [user]);
+
   useEffect(() => {
     fetchTeacher();
     fetchReviews();
     checkAuth();
   }, [fetchTeacher, fetchReviews, checkAuth]);
+
+  useEffect(() => {
+    checkExistingApplication();
+  }, [checkExistingApplication]);
 
   // Re-fetch data when page becomes visible (e.g., user navigates back after applying)
   useEffect(() => {
@@ -268,6 +288,13 @@ export default function TeacherDetail() {
             <Button disabled className="w-full bg-gray-700 text-gray-500 cursor-not-allowed py-6 text-lg">
               정원 마감 - 선택 불가
             </Button>
+          ) : hasExistingApplication ? (
+            <div>
+              <Button disabled className="w-full bg-green-700 text-green-200 cursor-not-allowed py-6 text-lg">
+                이미 신청 완료
+              </Button>
+              <p className="text-center text-green-400/70 text-sm mt-2">이미 다른 선생님에게 신청하셨습니다.</p>
+            </div>
           ) : (
             <Link to={`/apply/${teacher.id}`}>
               <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 py-6 text-lg">
