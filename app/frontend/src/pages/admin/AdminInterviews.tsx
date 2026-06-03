@@ -87,8 +87,9 @@ export default function AdminInterviews() {
           return;
         }
 
-        const res = await client.entities.graduation_interviews.query({ query: {}, limit: 500, sort: '-created_at' });
-        setInterviews(res?.data?.items || []);
+        const res = await client.entities.graduation_interviews.queryAll({ query: {}, limit: 500, sort: '-created_at' });
+        const items = res?.data?.items || res?.data || [];
+        setInterviews(Array.isArray(items) ? items : []);
       } catch (err) {
         console.error('Failed to load interviews:', err);
         navigate('/');
