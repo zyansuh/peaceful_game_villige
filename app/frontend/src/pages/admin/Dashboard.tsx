@@ -339,7 +339,7 @@ export default function Dashboard() {
         )}
 
         {/* Navigation */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Link to="/admin/applications">
             <Card className="bg-gray-900 border-gray-800 hover:border-gray-600 transition-colors cursor-pointer">
               <CardContent className="p-6">
@@ -353,6 +353,14 @@ export default function Dashboard() {
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold text-white mb-2">👨‍🏫 선생님 관리</h3>
                 <p className="text-gray-400 text-sm">선생님 등록, 수정, 상태 변경</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link to="/admin/interviews">
+            <Card className="bg-gray-900 border-amber-500/30 hover:border-amber-500/60 transition-colors cursor-pointer">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold text-white mb-2">📝 졸업면담 관리</h3>
+                <p className="text-gray-400 text-sm">졸업면담지 확인, 반별/월별 필터링</p>
               </CardContent>
             </Card>
           </Link>
