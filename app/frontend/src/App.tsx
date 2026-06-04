@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
+import AdminLayout from "./components/AdminLayout";
 import Index from "./pages/Index";
 import ClassPage from "./pages/ClassPage";
 import TeacherDetail from "./pages/TeacherDetail";
@@ -20,26 +21,27 @@ import InterviewComplete from "./pages/InterviewComplete";
 function App() {
   return (
     <BrowserRouter>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/class/:classId" element={<ClassPage />} />
-          <Route path="/teacher/:teacherId" element={<TeacherDetail />} />
-          <Route path="/apply/:teacherId" element={<ApplicationForm />} />
-          <Route path="/apply-complete" element={<ApplicationComplete />} />
-          <Route path="/mypage" element={<MyPage />} />
-          <Route path="/graduation-interview" element={<GraduationInterview />} />
-          <Route path="/admin" element={<Dashboard />} />
-          <Route path="/admin/applications" element={<AdminApplications />} />
-          <Route path="/admin/teachers" element={<AdminTeachers />} />
-          <Route path="/admin/interviews" element={<AdminInterviews />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/signup-complete" element={<SignupComplete />} />
-          <Route path="/interview-complete" element={<InterviewComplete />} />
-        </Routes>
-      </Layout>
+      <Routes>
+        {/* Admin pages with sidebar */}
+        <Route path="/admin" element={<AdminLayout><Dashboard /></AdminLayout>} />
+        <Route path="/admin/applications" element={<AdminLayout><AdminApplications /></AdminLayout>} />
+        <Route path="/admin/teachers" element={<AdminLayout><AdminTeachers /></AdminLayout>} />
+        <Route path="/admin/interviews" element={<AdminLayout><AdminInterviews /></AdminLayout>} />
+
+        {/* Public pages with main layout */}
+        <Route path="/" element={<Layout><Index /></Layout>} />
+        <Route path="/class/:classId" element={<Layout><ClassPage /></Layout>} />
+        <Route path="/teacher/:teacherId" element={<Layout><TeacherDetail /></Layout>} />
+        <Route path="/apply/:teacherId" element={<Layout><ApplicationForm /></Layout>} />
+        <Route path="/apply-complete" element={<Layout><ApplicationComplete /></Layout>} />
+        <Route path="/mypage" element={<Layout><MyPage /></Layout>} />
+        <Route path="/graduation-interview" element={<Layout><GraduationInterview /></Layout>} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/login" element={<Layout><Login /></Layout>} />
+        <Route path="/signup" element={<Layout><Signup /></Layout>} />
+        <Route path="/signup-complete" element={<Layout><SignupComplete /></Layout>} />
+        <Route path="/interview-complete" element={<Layout><InterviewComplete /></Layout>} />
+      </Routes>
     </BrowserRouter>
   );
 }

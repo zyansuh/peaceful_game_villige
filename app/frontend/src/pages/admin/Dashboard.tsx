@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import AdminPasswordGate from '@/components/AdminPasswordGate';
 import client from '@/lib/client';
 import {
@@ -189,13 +188,8 @@ export default function Dashboard() {
   return (
     <AdminPasswordGate>
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
+        <div className="mb-8">
           <h1 className="text-2xl font-bold text-white">관리자 대시보드</h1>
-          <Link to="/">
-            <Button variant="outline" size="sm" className="border-gray-700 text-gray-300 hover:bg-gray-800">
-              메인으로
-            </Button>
-          </Link>
         </div>
 
         {/* New Interview Notification */}
@@ -338,33 +332,7 @@ export default function Dashboard() {
           </Card>
         )}
 
-        {/* Navigation */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Link to="/admin/applications">
-            <Card className="bg-gray-900 border-gray-800 hover:border-gray-600 transition-colors cursor-pointer">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-white mb-2">📋 신청 관리</h3>
-                <p className="text-gray-400 text-sm">신입 신청 목록 확인, 승인/거절 처리</p>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link to="/admin/teachers">
-            <Card className="bg-gray-900 border-gray-800 hover:border-gray-600 transition-colors cursor-pointer">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-white mb-2">👨‍🏫 선생님 관리</h3>
-                <p className="text-gray-400 text-sm">선생님 등록, 수정, 상태 변경</p>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link to="/admin/interviews">
-            <Card className="bg-gray-900 border-amber-500/30 hover:border-amber-500/60 transition-colors cursor-pointer">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-white mb-2">📝 졸업면담 관리</h3>
-                <p className="text-gray-400 text-sm">졸업면담지 확인, 반별/월별 필터링</p>
-              </CardContent>
-            </Card>
-          </Link>
-        </div>
+
 
         {/* Recent Activity */}
         <div>
