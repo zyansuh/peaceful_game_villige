@@ -32,6 +32,7 @@ export default function GraduationInterview() {
   const navigate = useNavigate();
   const [loggedIn, setLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState('');
   const [teacher, setTeacher] = useState<Teacher | null>(null);
   const [className, setClassName] = useState('');
   const [answer1, setAnswer1] = useState('');
@@ -53,6 +54,7 @@ export default function GraduationInterview() {
           return;
         }
         setLoggedIn(true);
+        setUserEmail(userRes.data.email || '');
 
         // Check if already submitted
         const existingRes = await client.entities.graduation_interviews.query({ query: {} });
@@ -205,7 +207,9 @@ export default function GraduationInterview() {
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">📋 졸업면담지</h1>
-        <div className="flex items-center justify-center gap-4 text-sm text-gray-400">
+        <div className="flex items-center justify-center gap-4 text-sm text-gray-400 flex-wrap">
+          <span>작성자: <span className="text-white font-medium">{userEmail || '알 수 없음'}</span></span>
+          <span>|</span>
           <span>담당 선생님: <span className="text-white font-medium">{teacher?.nickname || '알 수 없음'}</span></span>
           <span>|</span>
           <span>반: <span className="text-white font-medium">{className || '알 수 없음'}</span></span>
