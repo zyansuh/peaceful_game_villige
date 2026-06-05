@@ -4,7 +4,26 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import AdminPasswordGate from '@/components/AdminPasswordGate';
 import client from '@/lib/client';
 
@@ -83,6 +102,13 @@ export default function AdminInterviews() {
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [editingInterview, setEditingInterview] = useState<Interview | null>(null);
+  const [editForm, setEditForm] = useState({
+    answer1: '',
+    answer2: '',
+    answer3: '',
+  });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -211,6 +237,56 @@ export default function AdminInterviews() {
 
   const toggleExpand = (id: number) => {
     setExpandedId(expandedId === id ? null : id);
+  };
+
+  const openEditDialog = (interview: Interview) => {
+    setEditingInterview(interview);
+    setEditForm({
+      answer1: interview.answer1 || '',
+      answer2: interview.answer2 || '',
+      answer3: interview.answer3 || '',
+    });
+  };
+
+  const handleEditSave = async () => {
+    if (!editingInterview) return;
+    setSaving(true);
+    try {
+      await client.entities.graduation_interviews.update({
+        id: String(editingInterview.id),
+        data: {
+          answer1: editForm.answer1,
+          answer2: editForm.answer2,
+          answer3: editForm.answer3,
+        },
+      });
+      setInterviews(prev =>
+        prev.map(interview =>
+          interview.id === editingInterview.id
+            ? { ...interview, ...editForm }
+            : interview
+        )
+      );
+      setEditingInterview(null);
+    } catch (err) {
+      console.error('Failed to update interview:', err);
+      alert('수정에 실패했습니다.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (interviewId: number) => {
+    try {
+      await client.entities.graduation_interviews.delete({ id: String(interviewId) });
+      setInterviews(prev => prev.filter(i => i.id !== interviewId));
+      if (expandedId === interviewId) {
+        setExpandedId(null);
+      }
+    } catch (err) {
+      console.error('Failed to delete interview:', err);
+      alert('삭제에 실패했습니다.');
+    }
   };
 
   if (loading) {
@@ -519,6 +595,48 @@ export default function AdminInterviews() {
                             </p>
                           </div>
                         </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex justify-end gap-3 mt-5 pt-4 border-t border-gray-800/50">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                            onClick={() => openEditDialog(interview)}
+                          >
+                            수정
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-red-700 text-red-400 hover:bg-red-900/30"
+                              >
+                                삭제
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="bg-gray-900 border-gray-700">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-white">면담 삭제</AlertDialogTitle>
+                                <AlertDialogDescription className="text-gray-400">
+                                  {interview.member_nickname || '알 수 없음'}님의 졸업면담을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700">
+                                  취소
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-red-600 text-white hover:bg-red-700"
+                                  onClick={() => handleDelete(interview.id)}
+                                >
+                                  삭제
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </div>
                     )}
                   </CardContent>
@@ -527,6 +645,60 @@ export default function AdminInterviews() {
             })}
           </div>
         )}
+
+        {/* Edit Dialog */}
+        <Dialog open={!!editingInterview} onOpenChange={(open) => { if (!open) setEditingInterview(null); }}>
+          <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="text-white">면담 답변 수정</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label className="text-gray-300">Q1. 평겜마 콘텐츠 참여 경험</Label>
+                <Textarea
+                  value={editForm.answer1}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, answer1: e.target.value }))}
+                  className="bg-gray-800 border-gray-700 text-white"
+                  rows={4}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-gray-300">Q2. 인상 깊었던 분</Label>
+                <Textarea
+                  value={editForm.answer2}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, answer2: e.target.value }))}
+                  className="bg-gray-800 border-gray-700 text-white"
+                  rows={4}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-gray-300">Q3. 동호회</Label>
+                <Textarea
+                  value={editForm.answer3}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, answer3: e.target.value }))}
+                  className="bg-gray-800 border-gray-700 text-white"
+                  rows={4}
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                  onClick={() => setEditingInterview(null)}
+                >
+                  취소
+                </Button>
+                <Button
+                  className="bg-blue-600 text-white hover:bg-blue-700"
+                  onClick={handleEditSave}
+                  disabled={saving}
+                >
+                  {saving ? '저장 중...' : '저장'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminPasswordGate>
   );
