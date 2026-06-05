@@ -18,6 +18,12 @@ interface Interview {
   answer2: string;
   answer3: string;
   created_at: string;
+  member_nickname?: string;
+}
+
+interface Member {
+  id: number;
+  username: string;
 }
 
 function getClassColor(className: string): { bg: string; text: string; border: string; label: string } {
@@ -87,9 +93,32 @@ export default function AdminInterviews() {
           return;
         }
 
+        // Fetch all interviews
         const res = await client.entities.graduation_interviews.queryAll({ query: {}, limit: 500, sort: '-created_at' });
         const items = res?.data?.items || res?.data || [];
-        setInterviews(Array.isArray(items) ? items : []);
+        const interviewList: Interview[] = Array.isArray(items) ? items : [];
+
+        // Fetch all members to map user_id -> nickname
+        try {
+          const membersRes = await client.entities.members.queryAll({ query: {}, limit: 2000 });
+          const memberItems = membersRes?.data?.items || membersRes?.data || [];
+          const members: Member[] = Array.isArray(memberItems) ? memberItems : [];
+          const memberMap = new Map<string, string>();
+          members.forEach((m) => {
+            memberMap.set(String(m.id), m.username);
+          });
+
+          // Attach nickname to each interview
+          interviewList.forEach((interview) => {
+            if (interview.user_id) {
+              interview.member_nickname = memberMap.get(String(interview.user_id)) || undefined;
+            }
+          });
+        } catch (memberErr) {
+          console.error('Failed to load members:', memberErr);
+        }
+
+        setInterviews(interviewList);
       } catch (err) {
         console.error('Failed to load interviews:', err);
         navigate('/');
@@ -167,10 +196,14 @@ export default function AdminInterviews() {
       result = result.filter((i) => getMonthKey(i.created_at) === selectedMonth);
     }
 
-    // Search by teacher name
+    // Search by teacher name or member nickname
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
-      result = result.filter((i) => i.teacher_name?.toLowerCase().includes(q));
+      result = result.filter(
+        (i) =>
+          i.teacher_name?.toLowerCase().includes(q) ||
+          i.member_nickname?.toLowerCase().includes(q)
+      );
     }
 
     return result;
@@ -336,7 +369,7 @@ export default function AdminInterviews() {
               {/* Search */}
               <div className="relative w-full sm:w-48">
                 <Input
-                  placeholder="선생님 이름 검색..."
+                  placeholder="선생님/작성자 검색..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-gray-800 border-gray-700 text-gray-300 placeholder:text-gray-500 pr-8"
@@ -399,6 +432,11 @@ export default function AdminInterviews() {
                         {classInfo.label}
                       </Badge>
 
+                      {/* Member Nickname */}
+                      <span className="text-emerald-400 font-medium text-sm flex-shrink-0 w-24 truncate" title={interview.member_nickname || '알 수 없음'}>
+                        {interview.member_nickname || '알 수 없음'}
+                      </span>
+
                       {/* Teacher Name */}
                       <span className="text-white font-medium text-sm flex-shrink-0 w-20 truncate">
                         {interview.teacher_name}
@@ -434,6 +472,10 @@ export default function AdminInterviews() {
                       <div className="border-t border-gray-800 p-5 animate-in fade-in slide-in-from-top-2 duration-200">
                         {/* Meta info */}
                         <div className="flex flex-wrap items-center gap-4 mb-5 pb-4 border-b border-gray-800/50">
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-500 text-xs">작성자:</span>
+                            <span className="text-emerald-400 text-sm font-medium">{interview.member_nickname || '알 수 없음'}</span>
+                          </div>
                           <div className="flex items-center gap-2">
                             <span className="text-gray-500 text-xs">제출일시:</span>
                             <span className="text-gray-300 text-sm">{formatDateTime(interview.created_at)}</span>
