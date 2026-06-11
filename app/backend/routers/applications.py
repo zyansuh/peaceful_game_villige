@@ -279,7 +279,8 @@ async def update_applicationss_batch(
         for item in request.items:
             # Only include non-None values for partial updates
             update_dict = {k: v for k, v in item.updates.model_dump().items() if v is not None}
-            result = await service.update(item.id, update_dict, user_id=str(current_user.id))
+            user_id_filter = None if current_user.role == "admin" else str(current_user.id)
+            result = await service.update(item.id, update_dict, user_id=user_id_filter)
             if result:
                 results.append(result)
         
@@ -298,14 +299,15 @@ async def update_applications(
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Update an existing applications (requires ownership)"""
+    """Update an existing applications (requires ownership, admins can update any)"""
     logger.debug(f"Updating applications {id} with data: {data}")
 
     service = ApplicationsService(db)
     try:
         # Only include non-None values for partial updates
         update_dict = {k: v for k, v in data.model_dump().items() if v is not None}
-        result = await service.update(id, update_dict, user_id=str(current_user.id))
+        user_id_filter = None if current_user.role == "admin" else str(current_user.id)
+        result = await service.update(id, update_dict, user_id=user_id_filter)
         if not result:
             logger.warning(f"Applications with id {id} not found for update")
             raise HTTPException(status_code=404, detail="Applications not found")
@@ -335,8 +337,9 @@ async def delete_applicationss_batch(
     deleted_count = 0
     
     try:
+        user_id_filter = None if current_user.role == "admin" else str(current_user.id)
         for item_id in request.ids:
-            success = await service.delete(item_id, user_id=str(current_user.id))
+            success = await service.delete(item_id, user_id=user_id_filter)
             if success:
                 deleted_count += 1
         
@@ -354,12 +357,13 @@ async def delete_applications(
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Delete a single applications by ID (requires ownership)"""
+    """Delete a single applications by ID (requires ownership, admins can delete any)"""
     logger.debug(f"Deleting applications with id: {id}")
     
     service = ApplicationsService(db)
     try:
-        success = await service.delete(id, user_id=str(current_user.id))
+        user_id_filter = None if current_user.role == "admin" else str(current_user.id)
+        success = await service.delete(id, user_id=user_id_filter)
         if not success:
             logger.warning(f"Applications with id {id} not found for deletion")
             raise HTTPException(status_code=404, detail="Applications not found")
