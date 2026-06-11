@@ -5,3 +5,8 @@ build/
 __pycache__
 dist
 vite.config.ts.timestamp-*
+
+# Backend local
+app/backend/gamema.db
+app/backend/.env
+app/backend/logs/

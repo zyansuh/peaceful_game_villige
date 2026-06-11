@@ -1,0 +1,8 @@
+{
+  "name": "@gamema/backend",
+  "private": true,
+  "scripts": {
+    "start": "python run_dev.py",
+    "install:deps": "pip install -r requirements.txt"
+  }
+}

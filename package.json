@@ -1,0 +1,20 @@
+{
+  "name": "gamema",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix app/frontend",
+    "dev:backend": "cross-env DATABASE_URL=sqlite:///./gamema.db LOG_LEVEL=INFO npm start --prefix app/backend",
+    "dev:all": "concurrently -n frontend,backend -c cyan,magenta \"npm run dev\" \"npm run dev:backend\"",
+    "build": "npm run build --prefix app/frontend",
+    "lint": "npm run lint --prefix app/frontend",
+    "preview": "npm run preview --prefix app/frontend",
+    "install:frontend": "npm install --prefix app/frontend",
+    "install:backend": "npm run install:deps --prefix app/backend",
+    "install:all": "npm install && npm run install:frontend && npm run install:backend",
+    "test:e2e:teachers": "python scripts/e2e-teachers.py"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3"
+  }
+}
