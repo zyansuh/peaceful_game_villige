@@ -10,6 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
 from services.graduation_interviews import Graduation_interviewsService
+from services.applications import ApplicationsService
+from services.teachers import TeachersService
 from dependencies.auth import get_current_user
 from schemas.auth import UserResponse
 
@@ -163,6 +165,73 @@ async def query_graduation_interviewss_all(
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
+async def _unassign_teacher_after_graduation(
+    db: AsyncSession,
+    user_id: str,
+) -> None:
+    """Mark approved applications as graduated and free teacher slots."""
+    apps_service = ApplicationsService(db)
+    teachers_service = TeachersService(db)
+
+    apps_result = await apps_service.get_list(
+        skip=0,
+        limit=100,
+        user_id=user_id,
+        query_dict={"status": "approved"},
+    )
+
+    for app in apps_result["items"]:
+        teacher = await teachers_service.get_by_id(app.teacher_id)
+        if teacher:
+            new_current = max(0, teacher.current_students - 1)
+            teacher_update: dict = {"current_students": new_current}
+            if teacher.status == "closed" and new_current < teacher.max_students:
+                teacher_update["status"] = "recruiting"
+            await teachers_service.update(app.teacher_id, teacher_update)
+
+        await apps_service.update(app.id, {"status": "graduated"}, user_id=user_id)
+
+
+@router.put("/all/{id}", response_model=Graduation_interviewsResponse)
+async def update_graduation_interviews_admin(
+    id: int,
+    data: Graduation_interviewsUpdateData,
+    db: AsyncSession = Depends(get_db),
+):
+    """Update graduation interview without ownership check (admin page)."""
+    service = Graduation_interviewsService(db)
+    try:
+        update_dict = {k: v for k, v in data.model_dump().items() if v is not None}
+        result = await service.update(id, update_dict)
+        if not result:
+            raise HTTPException(status_code=404, detail="Graduation_interviews not found")
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating graduation_interviews {id}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.delete("/all/{id}")
+async def delete_graduation_interviews_admin(
+    id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """Delete graduation interview without ownership check (admin page)."""
+    service = Graduation_interviewsService(db)
+    try:
+        success = await service.delete(id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Graduation_interviews not found")
+        return {"message": "Graduation_interviews deleted successfully", "id": id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting graduation_interviews {id}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
 @router.get("/{id}", response_model=Graduation_interviewsResponse)
 async def get_graduation_interviews(
     id: int,
@@ -202,6 +271,8 @@ async def create_graduation_interviews(
         result = await service.create(data.model_dump(), user_id=str(current_user.id))
         if not result:
             raise HTTPException(status_code=400, detail="Failed to create graduation_interviews")
+
+        await _unassign_teacher_after_graduation(db, str(current_user.id))
         
         logger.info(f"Graduation_interviews created successfully with id: {result.id}")
         return result
