@@ -1,8 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
-import AdminPasswordGate from '@/components/AdminPasswordGate';
+import { Button } from '@/components/ui/button';
+import AdminPasswordGate from '@/components/admin/AdminPasswordGate';
+import EditableStatCard from '@/components/admin/EditableStatCard';
 import client from '@/lib/client';
+import PageHeader from '@/components/common/PageHeader';
+import { ClipboardList, LayoutDashboard, RotateCcw } from 'lucide-react';
+import {
+  type DashboardStatKey,
+  type DashboardStatsComputed,
+  type DashboardStatsOverrides,
+  loadDashboardOverrides,
+  setDashboardOverride,
+  clearDashboardOverrides,
+  resolveStat,
+  isStatOverridden,
+} from '@/utils/admin/dashboard-stats-storage';
+import { classifyClassName } from '@/utils/admin/class-keys';
 import {
   BarChart,
   Bar,
@@ -48,20 +63,62 @@ function getRelativeTime(dateStr: string): string {
   return date.toLocaleDateString('ko-KR');
 }
 
+function calcRemainingByClass(teachers: { class_name?: string; game_category?: string; status?: string; max_students: number; current_students: number }[]) {
+  const result = { otter: 0, lion: 0, fox: 0 };
+  teachers.forEach((t) => {
+    if (t.status !== 'recruiting') return;
+    const slots = Math.max(0, t.max_students - t.current_students);
+    const key = classifyClassName(t.class_name || '') || classifyClassName(t.game_category || '');
+    if (key === 'otter') result.otter += slots;
+    else if (key === 'lion') result.lion += slots;
+    else if (key === 'fox') result.fox += slots;
+  });
+  return result;
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [stats, setStats] = useState({
+  const [computed, setComputed] = useState<DashboardStatsComputed>({
     totalApplications: 0,
     otterCount: 0,
     lionCount: 0,
     foxCount: 0,
-    remainingSlots: 0,
+    remainingOtter: 0,
+    remainingLion: 0,
+    remainingFox: 0,
   });
+  const [overrides, setOverrides] = useState<DashboardStatsOverrides>(() => loadDashboardOverrides());
   const [logs, setLogs] = useState<AdminLog[]>([]);
   const [newInterviewCount, setNewInterviewCount] = useState(0);
   const [interviewChartData, setInterviewChartData] = useState<{ month: string; count: number }[]>([]);
   const [applicationChartData, setApplicationChartData] = useState<{ month: string; 수달반: number; 사자반: number; 여우반: number }[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const display = useMemo(() => {
+    const keys = Object.keys(computed) as DashboardStatKey[];
+    return keys.reduce((acc, key) => {
+      acc[key] = resolveStat(key, computed, overrides);
+      return acc;
+    }, {} as DashboardStatsComputed);
+  }, [computed, overrides]);
+
+  const hasAnyOverride = useMemo(
+    () => (Object.keys(overrides) as DashboardStatKey[]).some((k) => isStatOverridden(k, overrides)),
+    [overrides]
+  );
+
+  const handleSaveOverride = useCallback((key: DashboardStatKey, value: number) => {
+    setOverrides(setDashboardOverride(key, value));
+  }, []);
+
+  const handleResetOverride = useCallback((key: DashboardStatKey) => {
+    setOverrides(setDashboardOverride(key, null));
+  }, []);
+
+  const handleResetAllOverrides = useCallback(() => {
+    clearDashboardOverrides();
+    setOverrides({});
+  }, []);
 
   useEffect(() => {
     const init = async () => {
@@ -72,28 +129,28 @@ export default function Dashboard() {
           return;
         }
 
-        // Fetch teachers for stats
         const teachersRes = await client.entities.teachers.query({ query: {}, limit: 50 });
         const teachers = teachersRes?.data?.items || [];
 
-        // Fetch user's applications to get count
-        const appsRes = await client.entities.applications.query({ query: {}, limit: 100 });
-        const apps = appsRes?.data?.items || [];
+        const appsRes = await client.entities.applications.queryAll({
+          query: {},
+          limit: 2000,
+          sort: '-created_at',
+        });
+        const apps = appsRes?.data?.items || appsRes?.data || [];
 
-        const remaining = teachers.reduce((sum: number, t: any) => {
-          if (t.status === 'recruiting') return sum + (t.max_students - t.current_students);
-          return sum;
-        }, 0);
+        const remaining = calcRemainingByClass(teachers);
 
-        setStats({
+        setComputed({
           totalApplications: apps.length,
-          otterCount: apps.filter((a: any) => a.class_name === '수달반').length,
-          lionCount: apps.filter((a: any) => a.class_name === '사자반').length,
-          foxCount: apps.filter((a: any) => a.class_name === '여우반').length,
-          remainingSlots: remaining,
+          otterCount: apps.filter((a) => a.class_name === '수달반').length,
+          lionCount: apps.filter((a) => a.class_name === '사자반').length,
+          foxCount: apps.filter((a) => a.class_name === '여우반').length,
+          remainingOtter: remaining.otter,
+          remainingLion: remaining.lion,
+          remainingFox: remaining.fox,
         });
 
-        // Build monthly application chart data (last 6 months, grouped by class)
         const now2 = new Date();
         const appMonthKeys: string[] = [];
         const appMonthMap: Record<string, { 수달반: number; 사자반: number; 여우반: number }> = {};
@@ -104,7 +161,7 @@ export default function Dashboard() {
           appMonthMap[key] = { 수달반: 0, 사자반: 0, 여우반: 0 };
         }
 
-        apps.forEach((app: any) => {
+        apps.forEach((app) => {
           if (!app.created_at) return;
           const createdAt = new Date(app.created_at);
           const key = `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, '0')}`;
@@ -116,30 +173,32 @@ export default function Dashboard() {
           }
         });
 
-        const appChartData = appMonthKeys.map((key) => ({
-          month: `${parseInt(key.split('-')[1])}월`,
-          수달반: appMonthMap[key].수달반,
-          사자반: appMonthMap[key].사자반,
-          여우반: appMonthMap[key].여우반,
-        }));
-        setApplicationChartData(appChartData);
+        setApplicationChartData(
+          appMonthKeys.map((key) => ({
+            month: `${parseInt(key.split('-')[1])}월`,
+            수달반: appMonthMap[key].수달반,
+            사자반: appMonthMap[key].사자반,
+            여우반: appMonthMap[key].여우반,
+          }))
+        );
 
-        // Fetch admin logs
-        const logsRes = await client.entities.admin_logs.query({ query: {}, sort: '-created_at', limit: 10 });
+        const logsRes = await client.entities.admin_logs.queryAll({
+          query: {},
+          sort: '-created_at',
+          limit: 10,
+        });
         setLogs(logsRes?.data?.items || []);
 
-        // Fetch graduation interviews for notification badge + chart
         try {
-          const interviewsRes = await client.entities.graduation_interviews.queryAll({});
-          const interviews = interviewsRes?.data || [];
+          const interviewsRes = await client.entities.graduation_interviews.queryAll({ limit: 500 });
+          const interviews = interviewsRes?.data?.items || interviewsRes?.data || [];
           const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-          const recentCount = interviews.filter((interview: any) => {
-            const createdAt = new Date(interview.created_at);
+          const recentCount = interviews.filter((interview: { created_at?: string }) => {
+            const createdAt = new Date(interview.created_at || '');
             return createdAt > oneDayAgo;
           }).length;
           setNewInterviewCount(recentCount);
 
-          // Build chart data for last 6 months
           const now = new Date();
           const monthMap: Record<string, number> = {};
           const monthKeys: string[] = [];
@@ -150,22 +209,21 @@ export default function Dashboard() {
             monthKeys.push(key);
           }
 
-          interviews.forEach((interview: any) => {
+          interviews.forEach((interview: { created_at?: string }) => {
             if (!interview.created_at) return;
             const createdAt = new Date(interview.created_at);
             const key = `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, '0')}`;
-            if (key in monthMap) {
-              monthMap[key]++;
-            }
+            if (key in monthMap) monthMap[key]++;
           });
 
-          const chartData = monthKeys.map((key) => ({
-            month: `${parseInt(key.split('-')[1])}월`,
-            count: monthMap[key],
-          }));
-          setInterviewChartData(chartData);
+          setInterviewChartData(
+            monthKeys.map((key) => ({
+              month: `${parseInt(key.split('-')[1])}월`,
+              count: monthMap[key],
+            }))
+          );
         } catch {
-          // graduation_interviews might not exist yet
+          // ignore
         }
       } catch (err) {
         console.error('Failed to load dashboard:', err);
@@ -179,7 +237,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-12 text-center">
+      <div className="page-container text-center">
         <p className="text-gray-400">로딩 중...</p>
       </div>
     );
@@ -187,22 +245,39 @@ export default function Dashboard() {
 
   return (
     <AdminPasswordGate>
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">관리자 대시보드</h1>
-        </div>
+      <div className="page-container">
+        <PageHeader
+          title="관리자 대시보드"
+          subtitle="통계 및 활동 요약 · 연필 아이콘으로 수치 수정"
+          action={
+            <div className="flex items-center gap-2">
+              {hasAnyOverride && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="border-amber-700/50 text-amber-300 hover:bg-amber-950/30 text-xs"
+                  onClick={handleResetAllOverrides}
+                >
+                  <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                  수치 초기화
+                </Button>
+              )}
+              <LayoutDashboard className="h-5 w-5 text-purple-400 hidden sm:block" />
+            </div>
+          }
+        />
 
-        {/* New Interview Notification */}
         {newInterviewCount > 0 && (
           <Link to="/admin/interviews">
-            <div className="mb-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/15 transition-colors cursor-pointer">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">📋</span>
-                <div className="flex-1">
-                  <p className="text-amber-300 font-semibold">
-                    새 졸업면담 {newInterviewCount}건 접수
+            <div className="mb-6 p-3 sm:p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/15 transition-colors cursor-pointer">
+              <div className="flex items-center gap-3 min-w-0">
+                <ClipboardList className="h-6 w-6 sm:h-7 sm:w-7 text-amber-400 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-amber-300 font-semibold text-sm sm:text-base truncate">
+                    새 졸업면담 {newInterviewCount}건
                   </p>
-                  <p className="text-amber-200/60 text-sm">최근 24시간 내 접수된 면담지입니다</p>
+                  <p className="text-amber-200/60 text-xs sm:text-sm truncate">최근 24시간 접수</p>
                 </div>
                 <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-500 text-black font-bold text-sm">
                   {newInterviewCount}
@@ -212,77 +287,89 @@ export default function Dashboard() {
           </Link>
         )}
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-gray-900 border-gray-800">
-            <CardContent className="p-6">
-              <p className="text-gray-400 text-sm">총 신청 수</p>
-              <p className="text-3xl font-bold text-white">{stats.totalApplications}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-gray-900 border-blue-500/30">
-            <CardContent className="p-6">
-              <p className="text-blue-400 text-sm">수달반 (오버워치)</p>
-              <p className="text-3xl font-bold text-white">{stats.otterCount}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-gray-900 border-orange-500/30">
-            <CardContent className="p-6">
-              <p className="text-orange-400 text-sm">사자반 (배그)</p>
-              <p className="text-3xl font-bold text-white">{stats.lionCount}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-gray-900 border-purple-500/30">
-            <CardContent className="p-6">
-              <p className="text-purple-400 text-sm">여우반 (발로란트)</p>
-              <p className="text-3xl font-bold text-white">{stats.foxCount}</p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
+          <EditableStatCard
+            label="총 신청"
+            value={display.totalApplications}
+            isOverridden={isStatOverridden('totalApplications', overrides)}
+            onSave={(v) => handleSaveOverride('totalApplications', v)}
+            onReset={() => handleResetOverride('totalApplications')}
+          />
+          <EditableStatCard
+            label="수달반 신청"
+            value={display.otterCount}
+            labelClassName="text-blue-400"
+            borderClassName="border-blue-500/30"
+            isOverridden={isStatOverridden('otterCount', overrides)}
+            onSave={(v) => handleSaveOverride('otterCount', v)}
+            onReset={() => handleResetOverride('otterCount')}
+          />
+          <EditableStatCard
+            label="사자반 신청"
+            value={display.lionCount}
+            labelClassName="text-orange-400"
+            borderClassName="border-orange-500/30"
+            isOverridden={isStatOverridden('lionCount', overrides)}
+            onSave={(v) => handleSaveOverride('lionCount', v)}
+            onReset={() => handleResetOverride('lionCount')}
+          />
+          <EditableStatCard
+            label="여우반 신청"
+            value={display.foxCount}
+            labelClassName="text-purple-400"
+            borderClassName="border-purple-500/30"
+            isOverridden={isStatOverridden('foxCount', overrides)}
+            onSave={(v) => handleSaveOverride('foxCount', v)}
+            onReset={() => handleResetOverride('foxCount')}
+          />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          <Card className="bg-gray-900 border-gray-800">
-            <CardContent className="p-6">
-              <p className="text-gray-400 text-sm">남은 자리</p>
-              <p className="text-3xl font-bold text-green-400">{stats.remainingSlots}명</p>
-            </CardContent>
-          </Card>
+        <h2 className="heading-section text-gray-300 mb-3">반별 남은 자리</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
+          <EditableStatCard
+            label="수달반 잔여"
+            value={display.remainingOtter}
+            labelClassName="text-green-400"
+            borderClassName="border-green-500/30"
+            isOverridden={isStatOverridden('remainingOtter', overrides)}
+            onSave={(v) => handleSaveOverride('remainingOtter', v)}
+            onReset={() => handleResetOverride('remainingOtter')}
+          />
+          <EditableStatCard
+            label="사자반 잔여"
+            value={display.remainingLion}
+            labelClassName="text-green-400"
+            borderClassName="border-green-500/30"
+            isOverridden={isStatOverridden('remainingLion', overrides)}
+            onSave={(v) => handleSaveOverride('remainingLion', v)}
+            onReset={() => handleResetOverride('remainingLion')}
+          />
+          <EditableStatCard
+            label="여우반 잔여"
+            value={display.remainingFox}
+            labelClassName="text-green-400"
+            borderClassName="border-green-500/30"
+            isOverridden={isStatOverridden('remainingFox', overrides)}
+            onSave={(v) => handleSaveOverride('remainingFox', v)}
+            onReset={() => handleResetOverride('remainingFox')}
+          />
         </div>
 
-        {/* Monthly Application Statistics Chart */}
         {applicationChartData.length > 0 && (
-          <Card className="bg-gray-900 border-gray-800 mb-8">
-            <CardContent className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-4">📊 월간 신청 통계</h2>
-              <div className="h-56">
+          <Card className="bg-gray-900 border-gray-800 mb-6 sm:mb-8">
+            <CardContent className="card-pad">
+              <h2 className="heading-section mb-4">월간 신청 통계</h2>
+              <div className="h-44 sm:h-56">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={applicationChartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis
-                      dataKey="month"
-                      tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                      axisLine={{ stroke: '#4B5563' }}
-                      tickLine={{ stroke: '#4B5563' }}
-                    />
-                    <YAxis
-                      allowDecimals={false}
-                      tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                      axisLine={{ stroke: '#4B5563' }}
-                      tickLine={{ stroke: '#4B5563' }}
-                    />
+                    <XAxis dataKey="month" tick={{ fill: '#9CA3AF', fontSize: 12 }} />
+                    <YAxis allowDecimals={false} tick={{ fill: '#9CA3AF', fontSize: 12 }} />
                     <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#1F2937',
-                        border: '1px solid #374151',
-                        borderRadius: '8px',
-                        color: '#F3F4F6',
-                      }}
-                      labelStyle={{ color: '#D1D5DB' }}
+                      contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#F3F4F6' }}
                       formatter={(value: number, name: string) => [`${value}건`, name]}
                     />
-                    <Legend
-                      wrapperStyle={{ color: '#D1D5DB', fontSize: 12 }}
-                    />
+                    <Legend wrapperStyle={{ color: '#D1D5DB', fontSize: 12 }} />
                     <Bar dataKey="수달반" fill="#3B82F6" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="사자반" fill="#F97316" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="여우반" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
@@ -293,35 +380,18 @@ export default function Dashboard() {
           </Card>
         )}
 
-        {/* Interview Submission Trend Chart */}
         {interviewChartData.length > 0 && (
-          <Card className="bg-gray-900 border-gray-800 mb-8">
-            <CardContent className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-4">📊 월별 면담 제출 통계</h2>
-              <div className="h-56">
+          <Card className="bg-gray-900 border-gray-800 mb-6 sm:mb-8">
+            <CardContent className="card-pad">
+              <h2 className="heading-section mb-4">월별 면담 제출 통계</h2>
+              <div className="h-44 sm:h-56">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={interviewChartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis
-                      dataKey="month"
-                      tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                      axisLine={{ stroke: '#4B5563' }}
-                      tickLine={{ stroke: '#4B5563' }}
-                    />
-                    <YAxis
-                      allowDecimals={false}
-                      tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                      axisLine={{ stroke: '#4B5563' }}
-                      tickLine={{ stroke: '#4B5563' }}
-                    />
+                    <XAxis dataKey="month" tick={{ fill: '#9CA3AF', fontSize: 12 }} />
+                    <YAxis allowDecimals={false} tick={{ fill: '#9CA3AF', fontSize: 12 }} />
                     <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#1F2937',
-                        border: '1px solid #374151',
-                        borderRadius: '8px',
-                        color: '#F3F4F6',
-                      }}
-                      labelStyle={{ color: '#D1D5DB' }}
+                      contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#F3F4F6' }}
                       formatter={(value: number) => [`${value}건`, '제출 수']}
                     />
                     <Bar dataKey="count" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
@@ -332,33 +402,26 @@ export default function Dashboard() {
           </Card>
         )}
 
-
-
-        {/* Recent Activity */}
         <div>
-          <h2 className="text-xl font-bold text-white mb-4">📜 최근 활동 내역</h2>
+          <h2 className="heading-section mb-4">최근 활동 내역</h2>
           <Card className="bg-gray-900 border-gray-800">
-            <CardContent className="p-6">
+            <CardContent className="card-pad">
               {logs.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">활동 내역이 없습니다</p>
+                <p className="text-gray-500 text-center py-4 text-sm">활동 내역이 없습니다</p>
               ) : (
                 <div className="space-y-3">
                   {logs.map((log) => (
-                    <div
-                      key={log.id}
-                      className="flex items-center gap-3 p-3 rounded-lg bg-gray-800/50 border border-gray-700/50"
-                    >
+                    <div key={log.id} className="flex items-center gap-3 p-3 rounded-lg bg-gray-800/50 border border-gray-700/50">
                       <span className="text-xl flex-shrink-0">{getActionIcon(log.action)}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-white truncate">
                           <span className="font-semibold">{log.target_name}</span>
                           <span className="text-gray-400 ml-2">({log.target_class})</span>
                         </p>
-                        <p className="text-xs text-gray-500">{log.details}</p>
+                        <p className="text-xs text-gray-500 truncate">{log.details}</p>
                       </div>
                       <div className="text-right flex-shrink-0">
                         <p className="text-xs text-gray-500">{getRelativeTime(log.created_at)}</p>
-                        <p className="text-xs text-gray-600 truncate max-w-[120px]">{log.admin_email}</p>
                       </div>
                     </div>
                   ))}
