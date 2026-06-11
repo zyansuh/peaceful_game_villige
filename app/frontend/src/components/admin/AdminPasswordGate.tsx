@@ -40,13 +40,13 @@ export default function AdminPasswordGate({ children }: AdminPasswordGateProps) 
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gray-950">
+    <div className="min-h-screen flex items-center justify-center px-3 sm:px-4 bg-gray-950">
       <Card className="w-full max-w-md bg-gray-900 border-gray-800">
-        <CardContent className="p-8">
+        <CardContent className="p-6 sm:p-8">
           <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🔒</div>
-            <h2 className="text-xl font-bold text-white mb-2">관리자 인증</h2>
-            <p className="text-gray-400 text-sm">관리자 페이지에 접근하려면 비밀번호를 입력하세요.</p>
+            <div className="text-4xl sm:text-5xl mb-4">🔒</div>
+            <h2 className="text-lg sm:text-xl font-bold text-white mb-2">관리자 인증</h2>
+            <p className="text-gray-400 text-xs sm:text-sm">비밀번호를 입력하세요</p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
