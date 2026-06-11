@@ -24,8 +24,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import AdminPasswordGate from '@/components/AdminPasswordGate';
+import PageHeader from '@/components/common/PageHeader';
+import AdminPasswordGate from '@/components/admin/AdminPasswordGate';
 import client from '@/lib/client';
+import { classifyClassName, CLASS_LABELS, type ClassKey } from '@/utils/admin/class-keys';
+import { CalendarDays } from 'lucide-react';
+import {
+  adminDeleteGraduationInterview,
+  adminUpdateGraduationInterview,
+} from '@/lib/api/admin-entities';
 
 interface Interview {
   id: number;
@@ -109,6 +116,12 @@ export default function AdminInterviews() {
     answer3: '',
   });
   const [saving, setSaving] = useState(false);
+  const [monthDetail, setMonthDetail] = useState<{
+    monthKey: string;
+    label: string;
+    total: number;
+    byClass: Record<ClassKey, string[]>;
+  } | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -203,6 +216,46 @@ export default function AdminInterviews() {
     return [...new Set(interviews.map((i) => getMonthKey(i.created_at)))].sort().reverse();
   }, [interviews]);
 
+  const monthlyGraduationStats = useMemo(() => {
+    const now = new Date();
+    const monthKeys: string[] = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      monthKeys.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+    }
+
+    type MonthBucket = {
+      monthKey: string;
+      label: string;
+      total: number;
+      byClass: Record<ClassKey, string[]>;
+    };
+
+    const buckets: Record<string, MonthBucket> = {};
+    monthKeys.forEach((key) => {
+      const [year, month] = key.split('-');
+      buckets[key] = {
+        monthKey: key,
+        label: `${year}년 ${parseInt(month)}월`,
+        total: 0,
+        byClass: { otter: [], lion: [], fox: [] },
+      };
+    });
+
+    interviews.forEach((interview) => {
+      const key = getMonthKey(interview.created_at);
+      if (!buckets[key]) return;
+      buckets[key].total += 1;
+      const classKey = classifyClassName(interview.class_name);
+      const nickname = interview.member_nickname || '알 수 없음';
+      if (classKey) {
+        buckets[key].byClass[classKey].push(nickname);
+      }
+    });
+
+    return [...monthKeys].reverse().map((key) => buckets[key]);
+  }, [interviews]);
+
   // Filtered interviews
   const filteredInterviews = useMemo(() => {
     let result = [...interviews];
@@ -252,13 +305,10 @@ export default function AdminInterviews() {
     if (!editingInterview) return;
     setSaving(true);
     try {
-      await client.entities.graduation_interviews.update({
-        id: String(editingInterview.id),
-        data: {
-          answer1: editForm.answer1,
-          answer2: editForm.answer2,
-          answer3: editForm.answer3,
-        },
+      await adminUpdateGraduationInterview(editingInterview.id, {
+        answer1: editForm.answer1,
+        answer2: editForm.answer2,
+        answer3: editForm.answer3,
       });
       setInterviews(prev =>
         prev.map(interview =>
@@ -278,7 +328,7 @@ export default function AdminInterviews() {
 
   const handleDelete = async (interviewId: number) => {
     try {
-      await client.entities.graduation_interviews.delete({ id: String(interviewId) });
+      await adminDeleteGraduationInterview(interviewId);
       setInterviews(prev => prev.filter(i => i.id !== interviewId));
       if (expandedId === interviewId) {
         setExpandedId(null);
@@ -292,7 +342,7 @@ export default function AdminInterviews() {
   if (loading) {
     return (
       <AdminPasswordGate>
-        <div className="container mx-auto px-4 py-12 text-center">
+        <div className="page-container text-center">
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
             <p className="text-gray-400">면담 데이터를 불러오는 중...</p>
@@ -304,24 +354,21 @@ export default function AdminInterviews() {
 
   return (
     <AdminPasswordGate>
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-white">졸업면담 관리</h1>
-            <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/40 text-sm px-3 py-1">
-              총 {stats.total}건
+      <div className="page-container">
+        <PageHeader
+          title="졸업면담 관리"
+          subtitle={`총 ${stats.total}건`}
+          backTo="/admin"
+          backLabel="대시보드"
+          action={
+            <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/40 text-xs sm:text-sm px-2 sm:px-3 py-1 whitespace-nowrap">
+              {stats.total}건
             </Badge>
-          </div>
-          <Link to="/admin">
-            <Button variant="outline" size="sm" className="border-gray-700 text-gray-300 hover:bg-gray-800">
-              ← 대시보드
-            </Button>
-          </Link>
-        </div>
+          }
+        />
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
           {/* Total */}
           <Card className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border-indigo-500/30">
             <CardContent className="p-5">
@@ -385,6 +432,49 @@ export default function AdminInterviews() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Monthly Graduation Statistics */}
+        <Card className="bg-gray-900 border-gray-800 mb-6 sm:mb-8">
+          <CardContent className="card-pad">
+            <div className="flex items-center gap-2 mb-4">
+              <CalendarDays className="h-5 w-5 text-indigo-400 shrink-0" />
+              <h2 className="heading-section">월간 졸업면담 통계</h2>
+            </div>
+            <p className="text-xs text-gray-500 mb-4">월을 클릭하면 반별 졸업 명단을 확인할 수 있습니다</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+              {monthlyGraduationStats.map((month) => (
+                <button
+                  key={month.monthKey}
+                  type="button"
+                  onClick={() => setMonthDetail(month)}
+                  className={`rounded-lg border p-3 text-left transition-colors ${
+                    month.total > 0
+                      ? 'border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/15'
+                      : 'border-gray-800 bg-gray-950/50 hover:bg-gray-900'
+                  }`}
+                >
+                  <p className="text-xs text-gray-400 truncate">{month.label}</p>
+                  <p className={`text-xl font-bold mt-1 ${month.total > 0 ? 'text-white' : 'text-gray-600'}`}>
+                    {month.total}건
+                  </p>
+                  {month.total > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-[10px] px-1.5">
+                        수달 {month.byClass.otter.length}
+                      </Badge>
+                      <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-[10px] px-1.5">
+                        사자 {month.byClass.lion.length}
+                      </Badge>
+                      <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-[10px] px-1.5">
+                        여우 {month.byClass.fox.length}
+                      </Badge>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Top Teachers Mini-Section */}
         {stats.topTeachers.length > 0 && (
@@ -494,48 +584,21 @@ export default function AdminInterviews() {
                     {/* Collapsed Row */}
                     <button
                       onClick={() => toggleExpand(interview.id)}
-                      className="w-full text-left p-5 flex items-center gap-4"
+                      className="w-full text-left p-3 sm:p-5 flex items-center gap-2 sm:gap-3 min-w-0"
                     >
-                      {/* Date */}
-                      <div className="hidden sm:block w-24 flex-shrink-0">
-                        <p className="text-gray-400 text-xs">
-                          {formatDate(interview.created_at)}
-                        </p>
-                      </div>
-
-                      {/* Class Badge */}
-                      <Badge className={`${classInfo.bg} ${classInfo.text} ${classInfo.border} flex-shrink-0`}>
+                      <Badge className={`${classInfo.bg} ${classInfo.text} ${classInfo.border} flex-shrink-0 text-[10px] sm:text-xs px-1.5 sm:px-2`}>
                         {classInfo.label}
                       </Badge>
-
-                      {/* Member Nickname */}
-                      <span className="text-emerald-400 font-medium text-sm flex-shrink-0 w-24 truncate" title={interview.member_nickname || '알 수 없음'}>
-                        {interview.member_nickname || '알 수 없음'}
-                      </span>
-
-                      {/* Teacher Name */}
-                      <span className="text-white font-medium text-sm flex-shrink-0 w-20 truncate">
-                        {interview.teacher_name}
-                      </span>
-
-                      {/* Preview of answers */}
-                      <div className="hidden md:flex flex-1 gap-2 min-w-0">
-                        <span className="text-gray-500 text-xs truncate flex-1">
-                          Q1: {truncateText(interview.answer1, 30)}
-                        </span>
-                        <span className="text-gray-500 text-xs truncate flex-1">
-                          Q2: {truncateText(interview.answer2, 30)}
-                        </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-emerald-400 font-medium text-xs sm:text-sm truncate">
+                          {interview.member_nickname || '알 수 없음'}
+                        </p>
+                        <p className="text-gray-400 text-[10px] sm:text-xs truncate">
+                          {interview.teacher_name} · {formatDate(interview.created_at)}
+                        </p>
                       </div>
-
-                      {/* Mobile date */}
-                      <span className="sm:hidden text-gray-500 text-xs ml-auto">
-                        {interview.created_at ? new Date(interview.created_at).toLocaleDateString('ko-KR') : '-'}
-                      </span>
-
-                      {/* Expand indicator */}
                       <span
-                        className={`text-gray-500 transition-transform duration-200 flex-shrink-0 ${
+                        className={`text-gray-500 transition-transform duration-200 flex-shrink-0 text-xs ${
                           isExpanded ? 'rotate-180' : ''
                         }`}
                       >
@@ -629,7 +692,10 @@ export default function AdminInterviews() {
                                 </AlertDialogCancel>
                                 <AlertDialogAction
                                   className="bg-red-600 text-white hover:bg-red-700"
-                                  onClick={() => handleDelete(interview.id)}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    void handleDelete(interview.id);
+                                  }}
                                 >
                                   삭제
                                 </AlertDialogAction>
@@ -645,6 +711,53 @@ export default function AdminInterviews() {
             })}
           </div>
         )}
+
+        {/* Monthly graduation detail dialog */}
+        <Dialog open={!!monthDetail} onOpenChange={(open) => { if (!open) setMonthDetail(null); }}>
+          <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-lg max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-white truncate">
+                {monthDetail?.label} 졸업 명단
+              </DialogTitle>
+            </DialogHeader>
+            {monthDetail && (
+              <div className="space-y-4 mt-2">
+                <p className="text-sm text-gray-400">총 {monthDetail.total}명</p>
+                {(['otter', 'lion', 'fox'] as ClassKey[]).map((classKey) => {
+                  const names = monthDetail.byClass[classKey];
+                  const colors = {
+                    otter: 'border-blue-500/30 bg-blue-500/10',
+                    lion: 'border-orange-500/30 bg-orange-500/10',
+                    fox: 'border-purple-500/30 bg-purple-500/10',
+                  };
+                  const textColors = {
+                    otter: 'text-blue-400',
+                    lion: 'text-orange-400',
+                    fox: 'text-purple-400',
+                  };
+                  return (
+                    <div key={classKey} className={`rounded-lg border p-3 ${colors[classKey]}`}>
+                      <p className={`text-sm font-semibold mb-2 ${textColors[classKey]}`}>
+                        {CLASS_LABELS[classKey]} ({names.length}명)
+                      </p>
+                      {names.length === 0 ? (
+                        <p className="text-xs text-gray-500">해당 반 졸업자 없음</p>
+                      ) : (
+                        <ul className="space-y-1">
+                          {names.map((name, idx) => (
+                            <li key={`${classKey}-${name}-${idx}`} className="text-sm text-gray-200 truncate">
+                              {idx + 1}. {name}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Edit Dialog */}
         <Dialog open={!!editingInterview} onOpenChange={(open) => { if (!open) setEditingInterview(null); }}>
