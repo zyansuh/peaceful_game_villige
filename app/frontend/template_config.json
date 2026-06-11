@@ -5,7 +5,7 @@
     "README.md",
     "src/App.tsx",
     "src/main.tsx",
-    "src/pages/Index.tsx",
+    "src/pages/home/Index.tsx",
     "index.html"
   ],
   "lang": "typescript",

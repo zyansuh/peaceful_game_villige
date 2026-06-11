@@ -1,22 +1,22 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Layout from "./components/Layout";
-import AdminLayout from "./components/AdminLayout";
-import Index from "./pages/Index";
-import ClassPage from "./pages/ClassPage";
-import TeacherDetail from "./pages/TeacherDetail";
-import ApplicationForm from "./pages/ApplicationForm";
-import ApplicationComplete from "./pages/ApplicationComplete";
-import MyPage from "./pages/MyPage";
-import GraduationInterview from "./pages/GraduationInterview";
-import Dashboard from "./pages/admin/Dashboard";
-import AdminApplications from "./pages/admin/AdminApplications";
-import AdminTeachers from "./pages/admin/AdminTeachers";
-import AdminInterviews from "./pages/admin/AdminInterviews";
-import AuthCallback from "./pages/AuthCallback";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import SignupComplete from "./pages/SignupComplete";
-import InterviewComplete from "./pages/InterviewComplete";
+import Layout from "@/components/layout/Layout";
+import AdminLayout from "@/components/admin/AdminLayout";
+import Index from "@/pages/home/Index";
+import ClassPage from "@/pages/class/ClassPage";
+import TeacherDetail from "@/pages/teacher/TeacherDetail";
+import ApplicationForm from "@/pages/application/ApplicationForm";
+import ApplicationComplete from "@/pages/application/ApplicationComplete";
+import MyPage from "@/pages/member/MyPage";
+import GraduationInterview from "@/pages/interview/GraduationInterview";
+import Dashboard from "@/pages/admin/Dashboard";
+import AdminApplications from "@/pages/admin/AdminApplications";
+import AdminTeachers from "@/pages/admin/AdminTeachers";
+import AdminInterviews from "@/pages/admin/AdminInterviews";
+import AuthCallback from "@/pages/auth/AuthCallback";
+import Login from "@/pages/auth/Login";
+import Signup from "@/pages/auth/Signup";
+import SignupComplete from "@/pages/auth/SignupComplete";
+import InterviewComplete from "@/pages/interview/InterviewComplete";
 
 function App() {
   return (

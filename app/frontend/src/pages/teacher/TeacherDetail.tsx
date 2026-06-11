@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import PageHeader from '@/components/common/PageHeader';
 import client from '@/lib/client';
 
 interface Teacher {
@@ -185,16 +186,16 @@ export default function TeacherDetail() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-12 text-center">
-        <p className="text-gray-400">로딩 중...</p>
+      <div className="page-container text-center">
+        <p className="text-gray-400 text-sm">로딩 중...</p>
       </div>
     );
   }
 
   if (!teacher) {
     return (
-      <div className="container mx-auto px-4 py-12 text-center">
-        <p className="text-gray-400">선생님 정보를 찾을 수 없습니다.</p>
+      <div className="page-container text-center">
+        <p className="text-gray-400 text-sm">선생님 정보를 찾을 수 없습니다</p>
       </div>
     );
   }
@@ -203,21 +204,23 @@ export default function TeacherDetail() {
   const classColor = getClassColor(teacher.class_name);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-3xl">
-      <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-white text-sm mb-6 inline-block">
-        ← 뒤로가기
-      </button>
+    <div className="page-container max-w-3xl">
+      <PageHeader
+        title={`${teacher.nickname} ${teacher.position}`}
+        subtitle={`${teacher.class_name} · ${teacher.game_category === 'overwatch' ? '오버워치' : teacher.game_category === 'pubg' ? '배틀그라운드' : '발로란트'}`}
+        backTo={`/class/${teacher.game_category}`}
+        backLabel="반 목록"
+      />
 
       <Card className="bg-gray-900 border-gray-800">
-        <CardContent className="p-8">
-          {/* Profile Header */}
-          <div className="flex items-center gap-6 mb-8">
-            <div className="w-24 h-24 rounded-full bg-gray-800 flex items-center justify-center text-4xl shrink-0">
+        <CardContent className="card-pad">
+          <div className="flex items-center gap-4 sm:gap-6 mb-6 sm:mb-8 min-w-0">
+            <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-gray-800 flex items-center justify-center text-2xl sm:text-4xl shrink-0">
               👨‍🏫
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white">{teacher.nickname} {teacher.position}</h1>
-              <p className="text-gray-400">{teacher.class_name} · {teacher.game_category === 'overwatch' ? '오버워치' : teacher.game_category === 'pubg' ? '배틀그라운드' : '발로란트'}</p>
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-2xl font-bold text-white truncate">{teacher.nickname} {teacher.position}</h1>
+              <p className="text-gray-400 text-xs sm:text-sm truncate">{teacher.class_name}</p>
               <div className="flex gap-2 mt-2">
                 {teacher.status === 'recruiting' && !isFull && (
                   <Badge className="bg-green-500/20 text-green-400 border-green-500/30">모집중</Badge>
@@ -230,7 +233,7 @@ export default function TeacherDetail() {
           </div>
 
           {/* Teacher Info */}
-          <div className="bg-gray-800/50 rounded-lg p-6 mb-8 space-y-3">
+          <div className="bg-gray-800/50 rounded-lg p-4 sm:p-6 mb-6 sm:mb-8 space-y-2 sm:space-y-3 text-xs sm:text-sm">
             {(() => {
               let gender = '';
               let birthYear = '';
@@ -242,13 +245,13 @@ export default function TeacherDetail() {
               }
               return (
                 <>
-                  <div className="flex">
-                    <span className="text-gray-500 w-24 shrink-0">성별 :</span>
-                    <span className="text-gray-200">{gender || '-'}</span>
+                  <div className="flex gap-2 min-w-0">
+                    <span className="text-gray-500 w-14 sm:w-20 shrink-0">성별</span>
+                    <span className="text-gray-200 truncate">{gender || '-'}</span>
                   </div>
-                  <div className="flex">
-                    <span className="text-gray-500 w-24 shrink-0">출생년도 :</span>
-                    <span className="text-gray-200">{birthYear || '-'}</span>
+                  <div className="flex gap-2 min-w-0">
+                    <span className="text-gray-500 w-14 sm:w-20 shrink-0">출생</span>
+                    <span className="text-gray-200 truncate">{birthYear || '-'}</span>
                   </div>
                 </>
               );
@@ -285,19 +288,19 @@ export default function TeacherDetail() {
 
           {/* Action Button */}
           {isFull ? (
-            <Button disabled className="w-full bg-gray-700 text-gray-500 cursor-not-allowed py-6 text-lg">
-              정원 마감 - 선택 불가
+            <Button disabled className="w-full bg-gray-700 text-gray-500 cursor-not-allowed py-4 sm:py-6 text-sm sm:text-lg">
+              정원 마감
             </Button>
           ) : hasExistingApplication ? (
             <div>
-              <Button disabled className="w-full bg-green-700 text-green-200 cursor-not-allowed py-6 text-lg">
-                이미 신청 완료
+              <Button disabled className="w-full bg-green-700 text-green-200 cursor-not-allowed py-4 sm:py-6 text-sm sm:text-lg">
+                신청 완료
               </Button>
-              <p className="text-center text-green-400/70 text-sm mt-2">이미 다른 선생님에게 신청하셨습니다.</p>
+              <p className="text-center text-green-400/70 text-xs sm:text-sm mt-2 truncate">이미 다른 선생님에게 신청했습니다</p>
             </div>
           ) : (
             <Link to={`/apply/${teacher.id}`}>
-              <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 py-6 text-lg">
+              <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 py-4 sm:py-6 text-sm sm:text-lg">
                 이 선생님 선택하기
               </Button>
             </Link>
@@ -305,12 +308,10 @@ export default function TeacherDetail() {
         </CardContent>
       </Card>
 
-      {/* Reviews Section */}
-      <Card className="bg-gray-900 border-gray-800 mt-6">
-        <CardContent className="p-8">
-          {/* Reviews Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-white">댓글</h2>
+      <Card className="bg-gray-900 border-gray-800 mt-4 sm:mt-6">
+        <CardContent className="card-pad">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="heading-section">댓글</h2>
             {reviews.length > 0 && (
               <span className="text-gray-400 text-sm">{reviews.length}개</span>
             )}

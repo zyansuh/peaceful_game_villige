@@ -52,7 +52,7 @@ export default function InterviewComplete() {
   }, []);
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-lg relative">
+    <div className="page-container max-w-lg relative">
       {/* Floating celebration particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(6)].map((_, i) => (

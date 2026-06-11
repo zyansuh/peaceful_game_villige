@@ -65,16 +65,15 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
+    <div className="min-h-[calc(100vh-3.5rem)] flex items-center justify-center px-3 sm:px-4 py-6">
       <div className="w-full max-w-md">
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 sm:p-8 shadow-2xl">
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
               회원가입
             </h1>
-            <p className="text-gray-400 mt-2 text-sm">
-              평화로운게임마을에 오신 것을 환영합니다!
+            <p className="text-gray-400 mt-2 text-xs sm:text-sm truncate">
+              평화로운게임마을
             </p>
           </div>
 

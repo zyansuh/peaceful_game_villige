@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import PageHeader from '@/components/common/PageHeader';
 import client from '@/lib/client';
 
 interface Teacher {
@@ -76,7 +77,7 @@ export default function ApplicationForm() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-12 text-center">
+      <div className="page-container text-center">
         <p className="text-gray-400">로딩 중...</p>
       </div>
     );
@@ -84,21 +85,23 @@ export default function ApplicationForm() {
 
   if (!teacher) {
     return (
-      <div className="container mx-auto px-4 py-12 text-center">
+      <div className="page-container text-center">
         <p className="text-gray-400">선생님 정보를 찾을 수 없습니다.</p>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <Link to={`/class/${teacher.game_category}`} className="text-gray-400 hover:text-white text-sm mb-6 inline-block">
-        ← 돌아가기
-      </Link>
+    <div className="page-container max-w-2xl">
+      <PageHeader
+        title="담당 선생님 신청"
+        subtitle={teacher.nickname}
+        backTo={`/class/${teacher.game_category}`}
+        backLabel="반 목록"
+      />
 
       <Card className="bg-gray-900 border-gray-800">
-        <CardContent className="p-8">
-          <h1 className="text-2xl font-bold text-white mb-2">담당 선생님 신청</h1>
+        <CardContent className="card-pad">
           <div className="bg-gray-800/50 rounded-lg p-4 mb-6">
             <p className="text-gray-400 text-sm">선택한 선생님</p>
             <p className="text-white text-lg font-semibold">{teacher.nickname}</p>
@@ -118,7 +121,7 @@ export default function ApplicationForm() {
             <Button
               type="submit"
               disabled={submitting}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 py-6 text-lg"
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 py-4 sm:py-6 text-sm sm:text-lg"
             >
               {submitting ? '신청 중...' : '신청 완료'}
             </Button>

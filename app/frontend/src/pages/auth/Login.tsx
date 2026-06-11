@@ -52,13 +52,13 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4">
+    <div className="min-h-[80vh] flex items-center justify-center px-3 sm:px-4 py-6">
       <Card className="w-full max-w-md bg-gray-900/80 border-gray-700 backdrop-blur-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+        <CardHeader className="text-center px-4 sm:px-6">
+          <CardTitle className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
             로그인
           </CardTitle>
-          <p className="text-gray-400 text-sm mt-2">평화로운게임마을에 오신 것을 환영합니다</p>
+          <p className="text-gray-400 text-xs sm:text-sm mt-2 truncate">평화로운게임마을</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-5">

@@ -60,7 +60,7 @@ export default function ApplicationComplete() {
   const classColor = className === 'overwatch' ? 'from-blue-500 to-cyan-400' : className === 'pubg' ? 'from-orange-500 to-amber-400' : 'from-purple-500 to-pink-400';
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-lg relative">
+    <div className="page-container max-w-lg relative">
       {/* Floating celebration particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(6)].map((_, i) => (

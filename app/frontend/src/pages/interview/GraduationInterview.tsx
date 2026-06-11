@@ -155,7 +155,7 @@ export default function GraduationInterview() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-16 text-center">
+      <div className="page-container text-center">
         <p className="text-gray-400">로딩 중...</p>
       </div>
     );
@@ -163,7 +163,7 @@ export default function GraduationInterview() {
 
   if (!loggedIn) {
     return (
-      <div className="container mx-auto px-4 py-16 max-w-lg">
+      <div className="page-container max-w-lg">
         <Card className="bg-gray-900 border-gray-800">
           <CardContent className="p-12 text-center">
             <LogIn className="w-12 h-12 text-gray-500 mx-auto mb-4" />
@@ -185,7 +185,7 @@ export default function GraduationInterview() {
 
   if (noApplication) {
     return (
-      <div className="container mx-auto px-4 py-16 max-w-lg">
+      <div className="page-container max-w-lg">
         <Card className="bg-gray-900 border-gray-800">
           <CardContent className="p-12 text-center">
             <ClipboardList className="w-12 h-12 text-gray-500 mx-auto mb-4" />
@@ -204,15 +204,16 @@ export default function GraduationInterview() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">📋 졸업면담지</h1>
-        <div className="flex items-center justify-center gap-4 text-sm text-gray-400 flex-wrap">
-          <span>작성자: <span className="text-white font-medium">{userNickname || '알 수 없음'}</span></span>
-          <span>|</span>
-          <span>담당 선생님: <span className="text-white font-medium">{teacher?.nickname || '알 수 없음'}</span></span>
-          <span>|</span>
-          <span>반: <span className="text-white font-medium">{className || '알 수 없음'}</span></span>
+    <div className="page-container max-w-2xl">
+      <div className="text-center mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-3xl font-bold text-white mb-3 flex items-center justify-center gap-2">
+          <ClipboardList className="h-6 w-6 sm:h-7 sm:w-7 text-purple-400 shrink-0" />
+          <span className="truncate">졸업면담지</span>
+        </h1>
+        <div className="grid grid-cols-1 xs:grid-cols-3 gap-2 text-xs sm:text-sm text-gray-400 max-w-md mx-auto">
+          <span className="truncate">작성자 <span className="text-white font-medium">{userNickname || '-'}</span></span>
+          <span className="truncate">선생님 <span className="text-white font-medium">{teacher?.nickname || '-'}</span></span>
+          <span className="truncate">반 <span className="text-white font-medium">{className || '-'}</span></span>
         </div>
       </div>
 
@@ -239,8 +240,8 @@ export default function GraduationInterview() {
       <div className="space-y-6">
         {/* Question 1 */}
         <Card className="bg-gray-900 border-gray-800">
-          <CardContent className="p-6">
-            <h3 className="text-white font-semibold mb-1">
+          <CardContent className="card-pad">
+            <h3 className="text-white font-semibold mb-1 text-sm sm:text-base leading-snug">
               1. 평겜마 콘텐츠를 참여하신 경험이 있으실까요? 참여하셨다면 느낀점이 있으실까요?
             </h3>
             <p className="text-gray-500 text-sm mb-3">
@@ -257,8 +258,8 @@ export default function GraduationInterview() {
 
         {/* Question 2 */}
         <Card className="bg-gray-900 border-gray-800">
-          <CardContent className="p-6">
-            <h3 className="text-white font-semibold mb-1">
+          <CardContent className="card-pad">
+            <h3 className="text-white font-semibold mb-1 text-sm sm:text-base leading-snug">
               2. 최근 함께한 사람 중 인상 깊거나 좋았던 분이 있으실까요?
             </h3>
             <p className="text-gray-500 text-sm mb-3">
@@ -275,8 +276,8 @@ export default function GraduationInterview() {
 
         {/* Question 3 */}
         <Card className="bg-gray-900 border-gray-800">
-          <CardContent className="p-6">
-            <h3 className="text-white font-semibold mb-1">
+          <CardContent className="card-pad">
+            <h3 className="text-white font-semibold mb-1 text-sm sm:text-base leading-snug">
               3. 동호회 가입하셨다면 아래 답변에 동호회 명을 적어주세요.
             </h3>
             <Textarea
@@ -299,7 +300,7 @@ export default function GraduationInterview() {
         <Button
           onClick={handleSubmit}
           disabled={submitting}
-          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 py-6 text-lg font-semibold"
+          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 py-4 sm:py-6 text-sm sm:text-lg font-semibold"
         >
           {submitting
             ? (isEditMode ? '수정 중...' : '제출 중...')

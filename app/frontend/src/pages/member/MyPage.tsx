@@ -202,6 +202,12 @@ export default function MyPage() {
           icon: <Ban className="w-4 h-4" />,
           className: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
         };
+      case 'graduated':
+        return {
+          label: '졸업',
+          icon: <BookOpen className="w-4 h-4" />,
+          className: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
+        };
       default:
         return {
           label: '대기중',
@@ -245,7 +251,7 @@ export default function MyPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-16 text-center">
+      <div className="page-container text-center">
         <div className="animate-pulse">
           <div className="w-12 h-12 rounded-full bg-gray-700 mx-auto mb-4" />
           <div className="h-4 bg-gray-700 rounded w-48 mx-auto" />
@@ -255,15 +261,15 @@ export default function MyPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-            <User className="w-5 h-5 text-white" />
+    <div className="page-container max-w-2xl">
+      <div className="mobile-stack justify-between mb-6 sm:mb-8">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center shrink-0">
+            <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white">마이페이지</h1>
-            <p className="text-gray-400 text-sm">신청 현황을 확인하세요</p>
+          <div className="min-w-0">
+            <h1 className="heading-page truncate">마이페이지</h1>
+            <p className="text-gray-400 text-xs sm:text-sm truncate">신청 현황 확인</p>
           </div>
         </div>
         <Button
@@ -271,10 +277,10 @@ export default function MyPage() {
           size="sm"
           onClick={handleRefresh}
           disabled={refreshing}
-          className="border-gray-700 text-gray-300 hover:bg-gray-800"
+          className="border-gray-700 text-gray-300 hover:bg-gray-800 w-full sm:w-auto shrink-0"
         >
           <RefreshCw className={`w-4 h-4 mr-1 ${refreshing ? 'animate-spin' : ''}`} />
-          새로고침
+          <span className="truncate">새로고침</span>
         </Button>
       </div>
 
@@ -377,30 +383,30 @@ export default function MyPage() {
           )}
 
           {/* Status summary */}
-          <div className="grid grid-cols-4 gap-3">
-            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-yellow-400">
+          <div className="stat-grid">
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-2.5 sm:p-3 text-center">
+              <p className="text-xl sm:text-2xl font-bold text-yellow-400">
                 {applications.filter(a => a.status === 'pending').length}
               </p>
-              <p className="text-xs text-yellow-400/70">대기중</p>
+              <p className="text-[10px] sm:text-xs text-yellow-400/70 truncate">대기</p>
             </div>
-            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-green-400">
+            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-2.5 sm:p-3 text-center">
+              <p className="text-xl sm:text-2xl font-bold text-green-400">
                 {applications.filter(a => a.status === 'approved').length}
               </p>
-              <p className="text-xs text-green-400/70">승인됨</p>
+              <p className="text-[10px] sm:text-xs text-green-400/70 truncate">승인</p>
             </div>
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-red-400">
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-2.5 sm:p-3 text-center">
+              <p className="text-xl sm:text-2xl font-bold text-red-400">
                 {applications.filter(a => a.status === 'rejected').length}
               </p>
-              <p className="text-xs text-red-400/70">거절됨</p>
+              <p className="text-[10px] sm:text-xs text-red-400/70 truncate">거절</p>
             </div>
-            <div className="bg-gray-500/10 border border-gray-500/20 rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-gray-400">
+            <div className="bg-gray-500/10 border border-gray-500/20 rounded-lg p-2.5 sm:p-3 text-center">
+              <p className="text-xl sm:text-2xl font-bold text-gray-400">
                 {applications.filter(a => a.status === 'cancelled').length}
               </p>
-              <p className="text-xs text-gray-400/70">취소됨</p>
+              <p className="text-[10px] sm:text-xs text-gray-400/70 truncate">취소</p>
             </div>
           </div>
 
