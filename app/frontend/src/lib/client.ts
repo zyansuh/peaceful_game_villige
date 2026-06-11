@@ -1,5 +1,1 @@
-import { createClient } from '@metagptx/web-sdk';
-
-const client = createClient();
-
-export default client;
+export { default } from './api/client';
