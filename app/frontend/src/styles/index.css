@@ -1,0 +1,10 @@
+@import './base/tailwind.css';
+@import './theme/variables.css';
+@import './theme/base-layer.css';
+@import './animations/laser-border.css';
+@import './animations/space-nebula.css';
+@import './animations/space-stars.css';
+@import './animations/space-planets.css';
+@import './animations/solar-system.css';
+@import './utilities/gradients.css';
+@import './utilities/responsive.css';

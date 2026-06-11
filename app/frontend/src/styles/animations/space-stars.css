@@ -1,0 +1,41 @@
+@keyframes stars-drift-1 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(3px, -2px);
+  }
+}
+
+@keyframes stars-drift-2 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-4px, 3px);
+  }
+}
+
+@keyframes stars-twinkle {
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.animate-stars-drift-1 {
+  animation: stars-drift-1 90s ease-in-out infinite;
+}
+
+.animate-stars-drift-2 {
+  animation: stars-drift-2 70s ease-in-out infinite;
+}
+
+.animate-stars-twinkle {
+  animation: stars-twinkle 4s ease-in-out infinite;
+}

@@ -1,0 +1,33 @@
+@layer utilities {
+  .page-container {
+    @apply mx-auto w-full max-w-7xl px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8;
+  }
+
+  .heading-page {
+    @apply text-xl sm:text-2xl font-bold text-white leading-tight;
+  }
+
+  .heading-section {
+    @apply text-base sm:text-lg font-semibold text-white leading-snug;
+  }
+
+  .text-oneline {
+    @apply truncate whitespace-nowrap max-w-full;
+  }
+
+  .stat-grid {
+    @apply grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3;
+  }
+
+  .card-pad {
+    @apply p-4 sm:p-5 md:p-6;
+  }
+
+  .btn-row {
+    @apply flex flex-col xs:flex-row gap-2 sm:gap-3 w-full sm:w-auto;
+  }
+
+  .mobile-stack {
+    @apply flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4;
+  }
+}

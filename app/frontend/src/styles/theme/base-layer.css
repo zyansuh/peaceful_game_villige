@@ -1,0 +1,14 @@
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    @apply bg-background text-foreground text-sm sm:text-base antialiased overflow-x-hidden;
+  }
+}
