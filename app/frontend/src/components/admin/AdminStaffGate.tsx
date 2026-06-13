@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { LogIn, ShieldAlert, UserCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { isStaffRole, ROLE_LABELS } from '@/constants/admin-permissions';
@@ -13,7 +14,7 @@ interface AdminStaffGateProps {
  * game1234 비밀번호 통과 후, 로그인 계정의 staff 권한(admin/teacher)을 확인합니다.
  */
 export default function AdminStaffGate({ children }: AdminStaffGateProps) {
-  const { user, loading, login } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -32,12 +33,14 @@ export default function AdminStaffGate({ children }: AdminStaffGateProps) {
             <h2 className="text-lg font-bold text-white">로그인이 필요합니다</h2>
             <p className="text-gray-400 text-sm">
               관리자 페이지 기능을 사용하려면 먼저 사이트에 로그인해 주세요.
+              <br />
+              (회원가입한 닉네임·비밀번호로 로그인)
             </p>
             <Button
+              asChild
               className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-0"
-              onClick={() => login()}
             >
-              로그인하기
+              <Link to="/login">로그인하기</Link>
             </Button>
           </CardContent>
         </Card>
@@ -60,10 +63,13 @@ export default function AdminStaffGate({ children }: AdminStaffGateProps) {
             </p>
             <div className="rounded-lg bg-gray-800/80 px-3 py-2 text-sm flex items-center justify-center gap-2 text-gray-300">
               <UserCircle className="h-4 w-4 shrink-0" />
-              <span className="truncate">{user.email}</span>
+              <span className="truncate">{user.name || user.email}</span>
               <span className="text-gray-500">·</span>
               <span>{ROLE_LABELS[user.role] || user.role}</span>
             </div>
+            <Button asChild variant="outline" className="w-full border-gray-700 text-gray-300">
+              <Link to="/">메인으로</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>

@@ -11,6 +11,15 @@ class RPApi {
         'Content-Type': 'application/json',
       },
     });
+
+    this.client.interceptors.request.use((config) => {
+      const token =
+        typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    });
   }
 
   private getBaseURL() {
