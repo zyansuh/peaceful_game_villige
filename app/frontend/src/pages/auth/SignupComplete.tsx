@@ -21,14 +21,14 @@ export default function SignupComplete() {
             로그인 후 담당 선생님을 선택해보세요!
           </p>
 
-          <div className="space-y-3">
+          <div className="flex flex-col gap-4 pt-1">
             <Button
-              onClick={() => window.location.href = '/login'}
+              onClick={() => { window.location.href = '/login'; }}
               className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 h-11 font-medium"
             >
               로그인하기
             </Button>
-            <Link to="/">
+            <Link to="/" className="block w-full">
               <Button
                 variant="outline"
                 className="w-full border-gray-700 text-gray-300 hover:bg-gray-800 h-11"

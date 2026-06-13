@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import client from '@/lib/client';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -27,25 +28,27 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const baseUrl = import.meta.env.VITE_API_URL || '';
-      const res = await fetch(`${baseUrl}/api/v1/auth/member-login`, {
+      const res = await client.apiCall.invoke({
+        url: '/api/v1/auth/member-login',
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username.trim(), password: password.trim() }),
+        data: { username: username.trim(), password: password.trim() },
       });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        setError(data?.detail || '로그인에 실패했습니다.');
+      const token = res.data?.token;
+      if (!token) {
+        setError('로그인에 실패했습니다.');
         return;
       }
 
-      const data = await res.json();
-      localStorage.setItem('token', data.token);
+      localStorage.setItem('token', token);
+      localStorage.setItem('isLougOutManual', 'false');
       navigate('/');
       window.location.reload();
-    } catch {
-      setError('서버 연결에 실패했습니다. 다시 시도해주세요.');
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ||
+        '로그인에 실패했습니다. 다시 시도해주세요.';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -74,7 +77,15 @@ export default function Login() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-300">비밀번호 (숫자 4자리)</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-gray-300">비밀번호 (숫자 4자리)</Label>
+                <Link
+                  to="/forgot-password"
+                  className="text-xs text-purple-400 hover:text-purple-300 underline"
+                >
+                  비밀번호 찾기
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"
