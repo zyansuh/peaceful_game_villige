@@ -3,6 +3,7 @@ export type AdminPermission =
   | 'applications'
   | 'teachers'
   | 'interviews'
+  | 'members'
   | 'roles';
 
 export type StaffRole = 'admin' | 'teacher';
@@ -17,8 +18,8 @@ export const ROLE_LABELS: Record<string, string> = {
 
 /** admin 패널 메뉴·기능별 접근 권한 */
 export const ROLE_PERMISSIONS: Record<StaffRole | 'user', AdminPermission[]> = {
-  admin: ['dashboard', 'applications', 'teachers', 'interviews', 'roles'],
-  teacher: ['dashboard', 'applications', 'interviews'],
+  admin: ['dashboard', 'applications', 'teachers', 'interviews', 'members', 'roles'],
+  teacher: ['dashboard', 'applications', 'interviews', 'members'],
   user: [],
 };
 
