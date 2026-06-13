@@ -13,6 +13,7 @@ from services.graduation_interviews import Graduation_interviewsService
 from services.applications import ApplicationsService
 from services.teachers import TeachersService
 from dependencies.auth import get_current_user
+from dependencies.roles import is_staff_role
 from schemas.auth import UserResponse
 
 # Set up logging
@@ -326,7 +327,7 @@ async def update_graduation_interviewss_batch(
         for item in request.items:
             # Only include non-None values for partial updates
             update_dict = {k: v for k, v in item.updates.model_dump().items() if v is not None}
-            user_id_filter = None if current_user.role == "admin" else str(current_user.id)
+            user_id_filter = None if is_staff_role(current_user.role) else str(current_user.id)
             result = await service.update(item.id, update_dict, user_id=user_id_filter)
             if result:
                 results.append(result)
@@ -353,7 +354,7 @@ async def update_graduation_interviews(
     try:
         # Only include non-None values for partial updates
         update_dict = {k: v for k, v in data.model_dump().items() if v is not None}
-        user_id_filter = None if current_user.role == "admin" else str(current_user.id)
+        user_id_filter = None if is_staff_role(current_user.role) else str(current_user.id)
         result = await service.update(id, update_dict, user_id=user_id_filter)
         if not result:
             logger.warning(f"Graduation_interviews with id {id} not found for update")
@@ -384,7 +385,7 @@ async def delete_graduation_interviewss_batch(
     deleted_count = 0
     
     try:
-        user_id_filter = None if current_user.role == "admin" else str(current_user.id)
+        user_id_filter = None if is_staff_role(current_user.role) else str(current_user.id)
         for item_id in request.ids:
             success = await service.delete(item_id, user_id=user_id_filter)
             if success:
@@ -409,7 +410,7 @@ async def delete_graduation_interviews(
     
     service = Graduation_interviewsService(db)
     try:
-        user_id_filter = None if current_user.role == "admin" else str(current_user.id)
+        user_id_filter = None if is_staff_role(current_user.role) else str(current_user.id)
         success = await service.delete(id, user_id=user_id_filter)
         if not success:
             logger.warning(f"Graduation_interviews with id {id} not found for deletion")

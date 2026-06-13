@@ -12,6 +12,7 @@ import Dashboard from "@/pages/admin/Dashboard";
 import AdminApplications from "@/pages/admin/AdminApplications";
 import AdminTeachers from "@/pages/admin/AdminTeachers";
 import AdminInterviews from "@/pages/admin/AdminInterviews";
+import AdminRoles from "@/pages/admin/AdminRoles";
 import AuthCallback from "@/pages/auth/AuthCallback";
 import Login from "@/pages/auth/Login";
 import Signup from "@/pages/auth/Signup";
@@ -27,6 +28,7 @@ function App() {
         <Route path="/admin/applications" element={<AdminLayout><AdminApplications /></AdminLayout>} />
         <Route path="/admin/teachers" element={<AdminLayout><AdminTeachers /></AdminLayout>} />
         <Route path="/admin/interviews" element={<AdminLayout><AdminInterviews /></AdminLayout>} />
+        <Route path="/admin/roles" element={<AdminLayout><AdminRoles /></AdminLayout>} />
 
         {/* Public pages with main layout */}
         <Route path="/" element={<Layout><Index /></Layout>} />

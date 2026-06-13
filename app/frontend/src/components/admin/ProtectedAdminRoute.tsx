@@ -12,7 +12,7 @@ interface ProtectedAdminRouteProps {
 const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({
   children,
 }) => {
-  const { user, loading, isAdmin, login } = useAuth();
+  const { user, loading, isStaff, login } = useAuth();
   const location = useLocation();
 
   // Loading state
@@ -33,7 +33,7 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({
   }
 
   // If the user is not an admin, show an insufficient-permissions page
-  if (!isAdmin) {
+  if (!isStaff) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="w-full max-w-md mx-4">

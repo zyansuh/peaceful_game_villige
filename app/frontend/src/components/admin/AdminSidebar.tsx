@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Home, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ADMIN_NAV_ITEMS } from '@/constants/admin-nav';
+import { useAdminPermissions } from '@/hooks/admin/use-admin-permissions';
 import { Button } from '@/components/ui/button';
 
 interface AdminSidebarProps {
@@ -16,6 +17,8 @@ export default function AdminSidebar({
   onClose,
 }: AdminSidebarProps) {
   const location = useLocation();
+  const { can, role } = useAdminPermissions();
+  const visibleItems = ADMIN_NAV_ITEMS.filter((item) => can(item.permission));
 
   const isActive = (path: string) => {
     if (path === '/admin') {
@@ -42,7 +45,9 @@ export default function AdminSidebar({
       <div className="p-4 border-b border-gray-800 flex items-start justify-between gap-2">
         <div className="min-w-0">
           <h2 className="text-lg font-bold text-white truncate">관리자</h2>
-          <p className="text-xs text-gray-500 mt-1 truncate">평화로운게임마을</p>
+          <p className="text-xs text-gray-500 mt-1 truncate">
+            {role === 'admin' ? '최고 관리자' : role === 'teacher' ? '스태프' : '평화로운게임마을'}
+          </p>
         </div>
         {isMobile && (
           <Button
@@ -70,7 +75,7 @@ export default function AdminSidebar({
       </div>
 
       <nav className="flex-1 p-3 space-y-1">
-        {ADMIN_NAV_ITEMS.map((item) => {
+        {visibleItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
           return (

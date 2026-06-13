@@ -17,8 +17,9 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import PageHeader from '@/components/common/PageHeader';
-import AdminPasswordGate from '@/components/admin/AdminPasswordGate';
 import TeacherFormModal from '@/components/admin/TeacherFormModal';
+import { useAdminPermissions } from '@/hooks/admin/use-admin-permissions';
+import { Navigate } from 'react-router-dom';
 import client from '@/lib/client';
 import {
   deleteTeacher,
@@ -38,6 +39,7 @@ type ClassFilter = '전체' | '수달반' | '사자반' | '여우반';
 
 export default function AdminTeachers() {
   const navigate = useNavigate();
+  const { canManageTeachers } = useAdminPermissions();
   const [teachers, setTeachers] = useState<AdminTeacher[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -166,19 +168,20 @@ export default function AdminTeachers() {
       ? teachers
       : teachers.filter((t) => t.class_name === classFilter);
 
+  if (!canManageTeachers) {
+    return <Navigate to="/admin" replace />;
+  }
+
   if (loading) {
     return (
-      <AdminPasswordGate>
-        <div className="page-container text-center">
-          <p className="text-gray-400 text-sm">로딩 중...</p>
-        </div>
-      </AdminPasswordGate>
+      <div className="page-container text-center">
+        <p className="text-gray-400 text-sm">로딩 중...</p>
+      </div>
     );
   }
 
   return (
-    <AdminPasswordGate>
-      <div className="page-container">
+    <div className="page-container">
         <PageHeader
           title="선생님 관리"
           subtitle={`${filteredTeachers.length}명 · 모달에서 바로 DB 저장`}
@@ -361,6 +364,5 @@ export default function AdminTeachers() {
           )}
         </div>
       </div>
-    </AdminPasswordGate>
   );
 }

@@ -61,3 +61,15 @@ async def get_admin_user(current_user: UserResponse = Depends(get_current_user))
     if current_user.role != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
     return current_user
+
+
+async def get_staff_user(current_user: UserResponse = Depends(get_current_user)) -> UserResponse:
+    """Dependency for admin panel staff (admin or teacher role)."""
+    from dependencies.roles import is_staff_role
+
+    if not is_staff_role(current_user.role):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Staff access required (admin or teacher role)",
+        )
+    return current_user

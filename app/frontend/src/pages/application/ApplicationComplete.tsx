@@ -96,7 +96,10 @@ export default function ApplicationComplete() {
           </div>
 
           <h1 className="text-2xl font-bold text-white mb-2">🎉 축하합니다!</h1>
-          <p className="text-gray-300 mb-6">신청이 성공적으로 완료되었습니다!</p>
+          <p className="text-gray-300 mb-2">신청이 접수되었습니다!</p>
+          <p className="text-gray-400 text-sm mb-6">
+            관리자 승인 후 담당 선생님으로 배정됩니다. 마이페이지에서 상태를 확인할 수 있습니다.
+          </p>
 
           {/* Teacher Summary Card */}
           <div className="bg-gray-800/70 rounded-xl p-5 mb-6 border border-gray-700/50 text-left">

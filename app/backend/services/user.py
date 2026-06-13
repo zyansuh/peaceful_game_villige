@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import Optional
+from typing import List, Optional
 
 from models.auth import User
 from sqlalchemy import select
@@ -20,6 +20,31 @@ class UserService:
         logger.debug(
             f"[DB_OP] Get user profile completed in {time.time() - start_time:.4f}s - found: {user is not None}"
         )
+        return user
+
+    @staticmethod
+    async def list_users(db: AsyncSession, skip: int = 0, limit: int = 200) -> List[User]:
+        result = await db.execute(
+            select(User).order_by(User.created_at.desc()).offset(skip).limit(limit)
+        )
+        return list(result.scalars().all())
+
+    @staticmethod
+    async def update_user_role(db: AsyncSession, user_id: str, role: str) -> Optional[User]:
+        from dependencies.roles import VALID_ROLES
+
+        if role not in VALID_ROLES:
+            raise ValueError(f"Invalid role: {role}")
+
+        result = await db.execute(select(User).where(User.id == user_id))
+        user = result.scalar_one_or_none()
+        if not user:
+            return None
+
+        user.role = role
+        await db.commit()
+        await db.refresh(user)
+        logger.info("Updated user %s role to %s", user_id, role)
         return user
 
     @staticmethod

@@ -5,6 +5,7 @@ import React, {
   useEffect,
   ReactNode,
 } from 'react';
+import { isAdminRole, isStaffRole } from '@/constants/admin-permissions';
 import { authApi } from '@/lib/api/auth';
 
 interface User {
@@ -23,6 +24,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refetch: () => Promise<void>;
   isAdmin: boolean;
+  isStaff: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -87,7 +89,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     refetch: checkAuthStatus,
-    isAdmin: user?.role === 'admin',
+    isAdmin: isAdminRole(user?.role),
+    isStaff: isStaffRole(user?.role),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

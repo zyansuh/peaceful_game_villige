@@ -25,7 +25,6 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import PageHeader from '@/components/common/PageHeader';
-import AdminPasswordGate from '@/components/admin/AdminPasswordGate';
 import client from '@/lib/client';
 import { classifyClassName, CLASS_LABELS, type ClassKey } from '@/utils/admin/class-keys';
 import { CalendarDays } from 'lucide-react';
@@ -341,19 +340,16 @@ export default function AdminInterviews() {
 
   if (loading) {
     return (
-      <AdminPasswordGate>
         <div className="page-container text-center">
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
             <p className="text-gray-400">면담 데이터를 불러오는 중...</p>
           </div>
         </div>
-      </AdminPasswordGate>
     );
   }
 
   return (
-    <AdminPasswordGate>
       <div className="page-container">
         <PageHeader
           title="졸업면담 관리"
@@ -813,6 +809,5 @@ export default function AdminInterviews() {
           </DialogContent>
         </Dialog>
       </div>
-    </AdminPasswordGate>
   );
 }

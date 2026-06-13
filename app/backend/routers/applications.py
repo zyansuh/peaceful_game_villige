@@ -11,7 +11,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import get_db
 from services.applications import ApplicationsService
 from services.teachers import TeachersService
+from services.application_teacher_sync import (
+    assign_teacher_slot,
+    release_teacher_slot,
+    sync_teacher_slot_on_status_change,
+)
 from dependencies.auth import get_current_user
+from dependencies.roles import is_staff_role
 from schemas.auth import UserResponse
 
 # Set up logging
@@ -217,13 +223,9 @@ async def create_applications(
         result = await service.create(data.model_dump(), user_id=str(current_user.id))
         if not result:
             raise HTTPException(status_code=400, detail="Failed to create applications")
-        
-        # Increment teacher's current_students and close if full
-        new_current = teacher.current_students + 1
-        update_data = {"current_students": new_current}
-        if new_current >= teacher.max_students:
-            update_data["status"] = "closed"
-        await teachers_service.update(data.teacher_id, update_data)
+
+        if data.status == "approved":
+            await assign_teacher_slot(teachers_service, data.teacher_id)
         
         logger.info(f"Applications created successfully with id: {result.id}")
         return result
@@ -279,7 +281,7 @@ async def update_applicationss_batch(
         for item in request.items:
             # Only include non-None values for partial updates
             update_dict = {k: v for k, v in item.updates.model_dump().items() if v is not None}
-            user_id_filter = None if current_user.role == "admin" else str(current_user.id)
+            user_id_filter = None if is_staff_role(current_user.role) else str(current_user.id)
             result = await service.update(item.id, update_dict, user_id=user_id_filter)
             if result:
                 results.append(result)
@@ -303,15 +305,33 @@ async def update_applications(
     logger.debug(f"Updating applications {id} with data: {data}")
 
     service = ApplicationsService(db)
+    teachers_service = TeachersService(db)
     try:
-        # Only include non-None values for partial updates
-        update_dict = {k: v for k, v in data.model_dump().items() if v is not None}
-        user_id_filter = None if current_user.role == "admin" else str(current_user.id)
-        result = await service.update(id, update_dict, user_id=user_id_filter)
-        if not result:
+        user_id_filter = None if is_staff_role(current_user.role) else str(current_user.id)
+        existing = await service.get_by_id(id, user_id=user_id_filter)
+        if not existing:
             logger.warning(f"Applications with id {id} not found for update")
             raise HTTPException(status_code=404, detail="Applications not found")
-        
+
+        old_status = existing.status
+        old_teacher_id = existing.teacher_id
+        update_dict = {k: v for k, v in data.model_dump().items() if v is not None}
+        result = await service.update(id, update_dict, user_id=user_id_filter)
+        if not result:
+            raise HTTPException(status_code=404, detail="Applications not found")
+
+        new_status = result.status
+        new_teacher_id = result.teacher_id
+        if old_teacher_id == new_teacher_id:
+            await sync_teacher_slot_on_status_change(
+                teachers_service, new_teacher_id, old_status, new_status
+            )
+        else:
+            if old_status == "approved":
+                await release_teacher_slot(teachers_service, old_teacher_id)
+            if new_status == "approved":
+                await assign_teacher_slot(teachers_service, new_teacher_id)
+
         logger.info(f"Applications {id} updated successfully")
         return result
     except HTTPException:
@@ -337,7 +357,7 @@ async def delete_applicationss_batch(
     deleted_count = 0
     
     try:
-        user_id_filter = None if current_user.role == "admin" else str(current_user.id)
+        user_id_filter = None if is_staff_role(current_user.role) else str(current_user.id)
         for item_id in request.ids:
             success = await service.delete(item_id, user_id=user_id_filter)
             if success:
@@ -361,8 +381,17 @@ async def delete_applications(
     logger.debug(f"Deleting applications with id: {id}")
     
     service = ApplicationsService(db)
+    teachers_service = TeachersService(db)
     try:
-        user_id_filter = None if current_user.role == "admin" else str(current_user.id)
+        user_id_filter = None if is_staff_role(current_user.role) else str(current_user.id)
+        existing = await service.get_by_id(id, user_id=user_id_filter)
+        if not existing:
+            logger.warning(f"Applications with id {id} not found for deletion")
+            raise HTTPException(status_code=404, detail="Applications not found")
+
+        if existing.status == "approved":
+            await release_teacher_slot(teachers_service, existing.teacher_id)
+
         success = await service.delete(id, user_id=user_id_filter)
         if not success:
             logger.warning(f"Applications with id {id} not found for deletion")

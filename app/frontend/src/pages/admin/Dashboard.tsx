@@ -2,7 +2,6 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import AdminPasswordGate from '@/components/admin/AdminPasswordGate';
 import EditableStatCard from '@/components/admin/EditableStatCard';
 import client from '@/lib/client';
 import PageHeader from '@/components/common/PageHeader';
@@ -244,7 +243,6 @@ export default function Dashboard() {
   }
 
   return (
-    <AdminPasswordGate>
       <div className="page-container">
         <PageHeader
           title="관리자 대시보드"
@@ -431,6 +429,5 @@ export default function Dashboard() {
           </Card>
         </div>
       </div>
-    </AdminPasswordGate>
   );
 }

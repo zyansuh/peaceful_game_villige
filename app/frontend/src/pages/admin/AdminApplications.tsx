@@ -16,7 +16,6 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import PageHeader from '@/components/common/PageHeader';
-import AdminPasswordGate from '@/components/admin/AdminPasswordGate';
 import ApplicationFormModal from '@/components/admin/ApplicationFormModal';
 import { useToast } from '@/hooks/use-toast';
 import client from '@/lib/client';
@@ -152,17 +151,14 @@ export default function AdminApplications() {
 
   if (loading) {
     return (
-      <AdminPasswordGate>
-        <div className="page-container text-center">
-          <p className="text-gray-400 text-sm">로딩 중...</p>
-        </div>
-      </AdminPasswordGate>
+      <div className="page-container text-center">
+        <p className="text-gray-400 text-sm">로딩 중...</p>
+      </div>
     );
   }
 
   return (
-    <AdminPasswordGate>
-      <div className="page-container">
+    <div className="page-container">
         <PageHeader
           title="신청 관리"
           subtitle={`${applications.length}건 · 전체 신청 조회`}
@@ -298,6 +294,5 @@ export default function AdminApplications() {
           </div>
         )}
       </div>
-    </AdminPasswordGate>
   );
 }
