@@ -31,7 +31,21 @@ def quiet_noisy_loggers() -> None:
     logging.getLogger("fastapi").setLevel(level)
 
 
+def ensure_local_dev_env() -> None:
+    """Set safe defaults for local SQLite dev when JWT env is missing."""
+    if os.environ.get("JWT_SECRET_KEY"):
+        return
+    db_url = os.environ.get("DATABASE_URL", "sqlite:///./gamema.db")
+    if "sqlite" in db_url:
+        os.environ.setdefault("JWT_SECRET_KEY", "dev-local-jwt-secret-change-in-production")
+        os.environ.setdefault("JWT_ALGORITHM", "HS256")
+        os.environ.setdefault("JWT_EXPIRE_MINUTES", "10080")
+        os.environ.setdefault("ADMIN_USER_ID", "1")
+        os.environ.setdefault("ADMIN_USER_EMAIL", "admin@local.dev")
+
+
 def main() -> None:
+    ensure_local_dev_env()
     from main import app, run_in_debug_mode  # noqa: WPS433 — triggers main.setup_logging
     from core.config import settings
 

@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "npm run dev --prefix app/frontend",
-    "dev:backend": "cross-env DATABASE_URL=sqlite:///./gamema.db LOG_LEVEL=INFO npm start --prefix app/backend",
+    "dev:backend": "cross-env DATABASE_URL=sqlite:///./gamema.db LOG_LEVEL=INFO JWT_SECRET_KEY=dev-local-jwt-secret-change-in-production JWT_ALGORITHM=HS256 JWT_EXPIRE_MINUTES=10080 ADMIN_USER_ID=1 ADMIN_USER_EMAIL=admin@local.dev npm start --prefix app/backend",
     "dev:all": "concurrently -n frontend,backend -c cyan,magenta \"npm run dev\" \"npm run dev:backend\"",
     "build": "npm run build --prefix app/frontend",
     "lint": "npm run lint --prefix app/frontend",
