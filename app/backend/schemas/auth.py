@@ -5,11 +5,13 @@ from pydantic import BaseModel
 
 
 class UserResponse(BaseModel):
-    id: str  # Now a string UUID (platform sub)
+    id: str
     email: str
     name: Optional[str] = None
-    role: str = "user"  # user | teacher | admin
+    discord_username: Optional[str] = None
+    role: str = "user"
     last_login: Optional[datetime] = None
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

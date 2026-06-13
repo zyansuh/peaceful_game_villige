@@ -51,6 +51,7 @@ async def get_current_user(token: str = Depends(get_bearer_token)) -> UserRespon
         id=user_id,
         email=payload.get("email", ""),
         name=payload.get("name"),
+        discord_username=payload.get("discord_username"),
         role=payload.get("role", "user"),
         last_login=last_login,
     )
