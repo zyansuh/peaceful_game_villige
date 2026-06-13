@@ -1,12 +1,11 @@
 from typing import List, Optional
 
 from core.database import get_db
-from dependencies.auth import get_admin_user, get_current_user
-from dependencies.roles import VALID_ROLES
+from dependencies.auth import get_admin_user, get_current_user, get_staff_user
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, field_validator
 from schemas.auth import UserResponse
-from services.user import UserService
+from services.user import NicknameValidationError, UserService, validate_nickname
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/api/v1/users", tags=["users"])
@@ -16,12 +15,23 @@ class UpdateProfileRequest(BaseModel):
     name: Optional[str] = None
 
 
+class UpdateNicknameRequest(BaseModel):
+    nickname: str
+
+    @field_validator("nickname")
+    @classmethod
+    def validate_nickname_field(cls, v: str) -> str:
+        return validate_nickname(v)
+
+
 class UpdateUserRoleRequest(BaseModel):
     role: str
 
     @field_validator("role")
     @classmethod
     def validate_role(cls, v: str) -> str:
+        from dependencies.roles import VALID_ROLES
+
         if v not in VALID_ROLES:
             raise ValueError(f"role must be one of: {', '.join(sorted(VALID_ROLES))}")
         return v
@@ -32,16 +42,27 @@ class UserListResponse(BaseModel):
     total: int
 
 
+def user_to_response(user) -> UserResponse:
+    return UserResponse(
+        id=user.id,
+        email=user.email,
+        name=user.name,
+        discord_username=getattr(user, "discord_username", None),
+        role=user.role,
+        last_login=user.last_login,
+        created_at=user.created_at,
+    )
+
+
 @router.get("/profile", response_model=UserResponse)
 async def get_profile(
     db: AsyncSession = Depends(get_db),
     current_user: UserResponse = Depends(get_current_user),
 ):
-    """Get current user profile"""
     profile = await UserService.get_user_profile(db, current_user.id)
     if not profile:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User profile not found")
-    return profile
+    return user_to_response(profile)
 
 
 @router.put("/profile", response_model=UserResponse)
@@ -50,11 +71,40 @@ async def update_profile(
     db: AsyncSession = Depends(get_db),
     current_user: UserResponse = Depends(get_current_user),
 ):
-    """Update current user profile"""
-    profile = await UserService.update_user_profile(db, current_user.id, profile_data.name)
+    if profile_data.name is None:
+        profile = await UserService.get_user_profile(db, current_user.id)
+    else:
+        try:
+            profile = await UserService.update_nickname(db, current_user.id, profile_data.name)
+        except NicknameValidationError as e:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
     if not profile:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User profile not found")
-    return profile
+    return user_to_response(profile)
+
+
+@router.patch("/profile/nickname", response_model=UserResponse)
+async def update_nickname(
+    body: UpdateNicknameRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
+    try:
+        profile = await UserService.update_nickname(db, current_user.id, body.nickname)
+    except NicknameValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+    return user_to_response(profile)
+
+
+@router.get("/directory", response_model=UserListResponse)
+async def list_member_directory(
+    db: AsyncSession = Depends(get_db),
+    _staff: UserResponse = Depends(get_staff_user),
+):
+    """Staff-only list of Discord-registered site members."""
+    users = await UserService.list_users(db, limit=2000)
+    items = [user_to_response(u) for u in users]
+    return UserListResponse(items=items, total=len(items))
 
 
 @router.get("/staff", response_model=UserListResponse)
@@ -62,9 +112,9 @@ async def list_users_for_role_management(
     db: AsyncSession = Depends(get_db),
     _admin: UserResponse = Depends(get_admin_user),
 ):
-    """List users for role assignment (admin only)."""
     users = await UserService.list_users(db, limit=500)
-    return UserListResponse(items=users, total=len(users))
+    items = [user_to_response(u) for u in users]
+    return UserListResponse(items=items, total=len(items))
 
 
 @router.patch("/staff/{user_id}/role", response_model=UserResponse)
@@ -74,7 +124,6 @@ async def update_user_role(
     db: AsyncSession = Depends(get_db),
     admin: UserResponse = Depends(get_admin_user),
 ):
-    """Assign user / teacher / admin role (admin only)."""
     if user_id == admin.id and body.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -86,4 +135,4 @@ async def update_user_role(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
     if not updated:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return updated
+    return user_to_response(updated)
