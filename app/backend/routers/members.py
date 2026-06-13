@@ -78,51 +78,16 @@ class MembersRegisterRequest(BaseModel):
     password: str
 
 
-@router.post("/register", response_model=MembersResponse, status_code=201)
+@router.post("/register")
 async def register_member(
     data: MembersRegisterRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    """Register a new member with username and password."""
-    logger.info(f"Registering new member: {data.username}")
-
-    service = MembersService(db)
-
-    # Check if username already exists
-    existing = await service.get_list(
-        skip=0,
-        limit=1,
-        query_dict={"username": data.username.strip()},
+    """Deprecated: use Discord login instead."""
+    raise HTTPException(
+        status_code=410,
+        detail="닉네임·비밀번호 회원가입은 종료되었습니다. Discord 로그인을 이용해 주세요.",
     )
-    if existing["total"] > 0:
-        raise HTTPException(
-            status_code=400,
-            detail="이미 사용 중인 닉네임입니다.",
-        )
-
-    # Validate password is 4 digits
-    if not data.password or len(data.password) != 4 or not data.password.isdigit():
-        raise HTTPException(
-            status_code=400,
-            detail="비밀번호는 숫자 4자리여야 합니다.",
-        )
-
-    # Create member
-    try:
-        result = await service.create({
-            "username": data.username.strip(),
-            "password": data.password,
-        })
-        if not result:
-            raise HTTPException(status_code=400, detail="회원가입에 실패했습니다.")
-
-        logger.info(f"Member registered successfully: id={result.id}, username={data.username}")
-        return result
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error registering member: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"회원가입 처리 중 오류가 발생했습니다: {str(e)}")
 
 
 @router.get("", response_model=MembersListResponse)
