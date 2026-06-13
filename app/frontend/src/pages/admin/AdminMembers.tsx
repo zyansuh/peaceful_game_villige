@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Loader2, UserCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import PageHeader from '@/components/common/PageHeader';
 import { useToast } from '@/hooks/use-toast';
-import { fetchAllMembers, type AdminMember } from '@/lib/api/members-admin';
+import {
+  fetchMemberDirectory,
+  roleLabel,
+  type DirectoryMember,
+} from '@/lib/api/members-admin';
 
 function formatDate(dateStr?: string): string {
   if (!dateStr) return '-';
@@ -20,11 +25,11 @@ function formatDate(dateStr?: string): string {
 
 export default function AdminMembers() {
   const { toast } = useToast();
-  const [members, setMembers] = useState<AdminMember[]>([]);
+  const [members, setMembers] = useState<DirectoryMember[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAllMembers()
+    fetchMemberDirectory()
       .then(setMembers)
       .catch((err) => {
         console.error(err);
@@ -50,7 +55,7 @@ export default function AdminMembers() {
     <div className="page-container">
       <PageHeader
         title="회원 목록"
-        subtitle={`총 ${members.length}명 · 회원가입(닉네임) 기준`}
+        subtitle={`총 ${members.length}명 · Discord 로그인 회원`}
         backTo="/admin"
         backLabel="대시보드"
       />
@@ -62,10 +67,7 @@ export default function AdminMembers() {
             안내
           </p>
           <p className="text-xs sm:text-sm">
-            사이트 회원가입으로 등록된 닉네임 목록입니다. 비밀번호는 보안상 표시하지 않습니다.
-          </p>
-          <p className="text-xs text-gray-500">
-            로그인·권한 변경은 <strong className="text-purple-300">권한 관리</strong> 메뉴에서 확인하세요.
+            Discord로 로그인한 회원 목록입니다. 사이트 닉네임은 마이페이지에서 변경할 수 있습니다.
           </p>
         </CardContent>
       </Card>
@@ -78,21 +80,27 @@ export default function AdminMembers() {
         </Card>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-800">
-          <table className="w-full text-sm text-left min-w-[360px]">
+          <table className="w-full text-sm text-left min-w-[640px]">
             <thead className="bg-gray-900/80 text-gray-400 text-xs uppercase">
               <tr>
-                <th className="px-4 py-3 font-medium w-16">#</th>
-                <th className="px-4 py-3 font-medium">닉네임</th>
-                <th className="px-4 py-3 font-medium">가입일</th>
+                <th className="px-4 py-3 font-medium">사이트 닉네임</th>
+                <th className="px-4 py-3 font-medium">Discord</th>
+                <th className="px-4 py-3 font-medium hidden md:table-cell">권한</th>
+                <th className="px-4 py-3 font-medium">가입/로그인</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800 bg-gray-900/40">
               {members.map((m) => (
                 <tr key={m.id} className="hover:bg-gray-800/40">
-                  <td className="px-4 py-3 text-gray-500">{m.id}</td>
-                  <td className="px-4 py-3 text-white font-medium">{m.username}</td>
+                  <td className="px-4 py-3 text-white font-medium">{m.name || '(미설정)'}</td>
+                  <td className="px-4 py-3 text-gray-400 text-xs">{m.discord_username || m.id}</td>
+                  <td className="px-4 py-3 hidden md:table-cell">
+                    <Badge variant="outline" className="border-gray-600 text-gray-300 text-xs font-normal">
+                      {roleLabel(m.role)}
+                    </Badge>
+                  </td>
                   <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
-                    {formatDate(m.created_at)}
+                    {formatDate(m.last_login || m.created_at)}
                   </td>
                 </tr>
               ))}
