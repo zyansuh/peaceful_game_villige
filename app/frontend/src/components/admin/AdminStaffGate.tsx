@@ -32,9 +32,9 @@ export default function AdminStaffGate({ children }: AdminStaffGateProps) {
             <LogIn className="h-10 w-10 text-cyan-400 mx-auto" />
             <h2 className="text-lg font-bold text-white">로그인이 필요합니다</h2>
             <p className="text-gray-400 text-sm">
-              관리자 페이지 기능을 사용하려면 먼저 사이트에 로그인해 주세요.
+              Discord로 로그인해 주세요.
               <br />
-              (회원가입한 닉네임·비밀번호로 로그인)
+              (지정 Discord 서버 멤버만 이용 가능)
             </p>
             <Button
               asChild

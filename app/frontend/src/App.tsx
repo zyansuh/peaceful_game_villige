@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Layout from "@/components/layout/Layout";
 import AdminLayout from "@/components/admin/AdminLayout";
@@ -17,9 +17,6 @@ import AdminRoles from "@/pages/admin/AdminRoles";
 import AdminMembers from "@/pages/admin/AdminMembers";
 import AuthCallback from "@/pages/auth/AuthCallback";
 import Login from "@/pages/auth/Login";
-import Signup from "@/pages/auth/Signup";
-import SignupComplete from "@/pages/auth/SignupComplete";
-import ForgotPassword from "@/pages/auth/ForgotPassword";
 import InterviewComplete from "@/pages/interview/InterviewComplete";
 
 function App() {
@@ -45,9 +42,9 @@ function App() {
           <Route path="/graduation-interview" element={<Layout><GraduationInterview /></Layout>} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/login" element={<Layout><Login /></Layout>} />
-          <Route path="/forgot-password" element={<Layout><ForgotPassword /></Layout>} />
-          <Route path="/signup" element={<Layout><Signup /></Layout>} />
-          <Route path="/signup-complete" element={<Layout><SignupComplete /></Layout>} />
+          <Route path="/signup" element={<Navigate to="/login" replace />} />
+          <Route path="/signup-complete" element={<Navigate to="/login" replace />} />
+          <Route path="/forgot-password" element={<Navigate to="/login" replace />} />
           <Route path="/interview-complete" element={<Layout><InterviewComplete /></Layout>} />
         </Routes>
       </BrowserRouter>

@@ -1,57 +1,20 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import client from '@/lib/client';
 
 export default function Login() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [searchParams] = useSearchParams();
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  useEffect(() => {
+    const err = searchParams.get('error');
+    if (err) setError(decodeURIComponent(err));
+  }, [searchParams]);
 
-    if (!username.trim()) {
-      setError('닉네임을 입력해주세요.');
-      return;
-    }
-    if (!password.trim()) {
-      setError('비밀번호를 입력해주세요.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await client.apiCall.invoke({
-        url: '/api/v1/auth/member-login',
-        method: 'POST',
-        data: { username: username.trim(), password: password.trim() },
-      });
-
-      const token = res.data?.token;
-      if (!token) {
-        setError('로그인에 실패했습니다.');
-        return;
-      }
-
-      localStorage.setItem('token', token);
-      localStorage.setItem('isLougOutManual', 'false');
-      navigate('/');
-      window.location.reload();
-    } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ||
-        '로그인에 실패했습니다. 다시 시도해주세요.';
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
+  const handleDiscordLogin = () => {
+    window.location.href = '/api/v1/auth/discord/login';
   };
 
   return (
@@ -61,61 +24,40 @@ export default function Login() {
           <CardTitle className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
             로그인
           </CardTitle>
-          <p className="text-gray-400 text-xs sm:text-sm mt-2 truncate">평화로운게임마을</p>
+          <p className="text-gray-400 text-xs sm:text-sm mt-2">평화로운게임마을</p>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="username" className="text-gray-300">평겜마 닉네임</Label>
-              <Input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="닉네임을 입력하세요"
-                className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-500 focus:border-purple-500"
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-gray-300">비밀번호 (숫자 4자리)</Label>
-                <Link
-                  to="/forgot-password"
-                  className="text-xs text-purple-400 hover:text-purple-300 underline"
-                >
-                  비밀번호 찾기
-                </Link>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="비밀번호를 입력하세요"
-                maxLength={4}
-                className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-500 focus:border-purple-500"
-              />
-            </div>
+        <CardContent className="space-y-5">
+          <p className="text-gray-400 text-sm text-center leading-relaxed">
+            Discord 계정으로 로그인합니다.
+            <br />
+            <span className="text-gray-500 text-xs">지정된 Discord 서버에 가입된 분만 이용할 수 있습니다.</span>
+          </p>
 
-            {error && (
-              <p className="text-red-400 text-sm text-center">{error}</p>
-            )}
+          {error && (
+            <p className="text-red-400 text-sm text-center bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+              {error}
+            </p>
+          )}
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0"
-            >
-              {loading ? '로그인 중...' : '로그인'}
-            </Button>
+          <Button
+            type="button"
+            onClick={handleDiscordLogin}
+            className="w-full h-11 bg-[#5865F2] hover:bg-[#4752C4] text-white border-0 font-medium gap-2"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+              <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
+            </svg>
+            Discord로 로그인
+          </Button>
 
-            <div className="text-center text-sm text-gray-400">
-              아직 계정이 없으신가요?{' '}
-              <Link to="/signup" className="text-purple-400 hover:text-purple-300 underline">
-                회원가입
-              </Link>
-            </div>
-          </form>
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full text-gray-500 hover:text-gray-300"
+            onClick={() => navigate('/')}
+          >
+            메인으로 돌아가기
+          </Button>
         </CardContent>
       </Card>
     </div>

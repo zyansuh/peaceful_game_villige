@@ -7,7 +7,6 @@ import {
   Shield,
   LogIn,
   LogOut,
-  UserPlus,
   X,
   ClipboardList,
 } from 'lucide-react';
@@ -87,22 +86,14 @@ export default function SiteHeader({ user, onLogout }: SiteHeaderProps) {
               로그아웃
             </Button>
           ) : (
-            <>
-              <Link to="/signup">
-                <Button variant="outline" size="sm" className="border-gray-700 text-gray-300 hover:bg-gray-800 gap-1.5">
-                  <UserPlus className="h-4 w-4" />
-                  가입
-                </Button>
-              </Link>
-              <Button
-                onClick={() => navigate('/login')}
-                size="sm"
-                className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 gap-1.5"
-              >
-                <LogIn className="h-4 w-4" />
-                로그인
-              </Button>
-            </>
+            <Button
+              onClick={() => navigate('/login')}
+              size="sm"
+              className="bg-[#5865F2] hover:bg-[#4752C4] text-white border-0 gap-1.5"
+            >
+              <LogIn className="h-4 w-4" />
+              Discord 로그인
+            </Button>
           )}
         </div>
 
@@ -159,16 +150,10 @@ export default function SiteHeader({ user, onLogout }: SiteHeaderProps) {
                   로그아웃
                 </button>
               ) : (
-                <>
-                  <Link to="/login" className={navLinkClass} onClick={() => setOpen(false)}>
-                    <LogIn className="h-4 w-4 text-green-400" />
-                    로그인
-                  </Link>
-                  <Link to="/signup" className={navLinkClass} onClick={() => setOpen(false)}>
-                    <UserPlus className="h-4 w-4 text-pink-400" />
-                    회원가입
-                  </Link>
-                </>
+                <Link to="/login" className={navLinkClass} onClick={() => setOpen(false)}>
+                  <LogIn className="h-4 w-4 text-green-400" />
+                  Discord 로그인
+                </Link>
               )}
             </nav>
           </SheetContent>
