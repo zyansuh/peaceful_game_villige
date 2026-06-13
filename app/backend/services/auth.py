@@ -7,6 +7,7 @@ from typing import Any, Dict, Optional, Tuple
 from core.auth import create_access_token
 from core.config import settings
 from core.database import db_manager
+from core.staff_nicknames import resolve_role_for_nickname
 from models.auth import OIDCState, User
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -42,6 +43,22 @@ class AuthService:
         await self.db.commit()
         await self.db.refresh(user)
         logger.debug(f"[DB_OP] User commit/refresh completed in {time.time() - start_time_commit:.4f}s")
+        return user
+
+    async def apply_nickname_role_bootstrap(self, user: User, nickname: str) -> User:
+        """Promote user to admin/teacher when nickname is in the bootstrap allowlist."""
+        granted = resolve_role_for_nickname(nickname)
+        if not granted:
+            return user
+        if user.role == granted:
+            return user
+        # Never downgrade admin → teacher via nickname list
+        if user.role == "admin" and granted == "teacher":
+            return user
+        user.role = granted
+        await self.db.commit()
+        await self.db.refresh(user)
+        logger.info("[nickname-bootstrap] Granted role=%s to user_id=%s nickname=%s", granted, user.id, nickname)
         return user
 
     async def issue_app_token(

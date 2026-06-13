@@ -40,6 +40,11 @@ class MemberLoginRequest(BaseModel):
     password: str
 
 
+class MemberResetPasswordRequest(BaseModel):
+    username: str
+    new_password: str
+
+
 def _local_patch(url: str) -> str:
     """Patch URL for local development."""
     if os.getenv("LOCAL_PATCH", "").lower() not in ("true", "1"):
@@ -339,13 +344,58 @@ async def member_login(
             detail="닉네임 또는 비밀번호가 올바르지 않습니다.",
         )
 
-    # Create user object and issue JWT token
-    user = User(id=str(member.id), email="", name=member.username, role="user")
     auth_service = AuthService(db)
-    app_token, expires_at, _ = await auth_service.issue_app_token(user=user)
+    user = await auth_service.get_or_create_user(
+        platform_sub=str(member.id),
+        email=f"{member.username}@member.local",
+        name=member.username,
+    )
+    user = await auth_service.apply_nickname_role_bootstrap(user, member.username)
+
+    try:
+        app_token, expires_at, _ = await auth_service.issue_app_token(user=user)
+    except ValueError as exc:
+        logger.error("[member-login] JWT configuration error: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="로그인 서비스 설정이 완료되지 않았습니다. JWT_SECRET_KEY를 확인해 주세요.",
+        ) from exc
 
     logger.info(f"[member-login] Login successful for user_id={member.id}, username={member.username}")
     return {"token": app_token}
+
+
+@router.post("/reset-password")
+async def reset_member_password(
+    data: MemberResetPasswordRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Reset member password with nickname verification."""
+    username = data.username.strip()
+    new_password = data.new_password.strip()
+
+    if not username:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="닉네임을 입력해주세요.")
+    if len(new_password) != 4 or not new_password.isdigit():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="비밀번호는 숫자 4자리여야 합니다.",
+        )
+
+    stmt = select(Members).where(Members.username == username)
+    result = await db.execute(stmt)
+    member = result.scalars().first()
+    if not member:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="등록되지 않은 닉네임입니다.",
+        )
+
+    member.password = new_password
+    await db.commit()
+
+    logger.info("[reset-password] Password reset for username=%s", username)
+    return {"message": "비밀번호가 변경되었습니다. 새 비밀번호로 로그인해 주세요."}
 
 
 @router.get("/me", response_model=UserResponse)
