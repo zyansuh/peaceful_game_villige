@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Clock, CheckCircle, XCircle, User, RefreshCw, Ban, Star, ClipboardList, BookOpen, Gamepad2 } from 'lucide-react';
 import client from '@/lib/client';
+import ProfileNicknameCard from '@/components/member/ProfileNicknameCard';
 
 interface Application {
   id: number;
@@ -68,6 +69,8 @@ export default function MyPage() {
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [graduationInterview, setGraduationInterview] = useState<GraduationInterviewData | null>(null);
   const [interviewLoading, setInterviewLoading] = useState(true);
+  const [profileName, setProfileName] = useState('');
+  const [discordUsername, setDiscordUsername] = useState<string | undefined>();
 
   const fetchData = async () => {
     try {
@@ -82,6 +85,8 @@ export default function MyPage() {
         window.location.href = '/login';
         return;
       }
+      setProfileName(userRes.data.name || '');
+      setDiscordUsername(userRes.data.discord_username);
 
       // Fetch user's applications
       let appList: Application[] = [];
@@ -283,6 +288,15 @@ export default function MyPage() {
           <span className="truncate">새로고침</span>
         </Button>
       </div>
+
+      <ProfileNicknameCard
+        initialName={profileName}
+        discordUsername={discordUsername}
+        onUpdated={(name) => {
+          setProfileName(name);
+          window.location.reload();
+        }}
+      />
 
       {applications.length === 0 ? (
         <Card className="bg-gray-900 border-gray-800">
