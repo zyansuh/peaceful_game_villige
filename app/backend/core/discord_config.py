@@ -20,7 +20,13 @@ def get_discord_guild_id() -> str:
 
 
 def get_frontend_url() -> str:
-    return os.environ.get("FRONTEND_URL", "http://localhost:3000").rstrip("/")
+    explicit = os.environ.get("FRONTEND_URL", "").strip()
+    if explicit:
+        return explicit.rstrip("/")
+    vercel = os.environ.get("VERCEL_URL", "").strip()
+    if vercel:
+        return f"https://{vercel}".rstrip("/")
+    return "http://localhost:3000"
 
 
 def get_discord_redirect_uri() -> str:

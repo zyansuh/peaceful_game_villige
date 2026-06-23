@@ -21,7 +21,12 @@ from services.auth import initialize_admin_user
 
 def setup_logging():
     """Configure the logging system."""
-    if os.environ.get("IS_LAMBDA") == "true":
+    if os.environ.get("IS_LAMBDA") == "true" or os.environ.get("VERCEL"):
+        logging.basicConfig(
+            level=getattr(logging, os.environ.get("LOG_LEVEL", "INFO").upper(), logging.INFO),
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            handlers=[logging.StreamHandler()],
+        )
         return
 
     # Create the logs directory
