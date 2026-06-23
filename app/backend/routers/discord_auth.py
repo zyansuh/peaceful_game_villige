@@ -2,10 +2,11 @@ import logging
 import secrets
 
 from core.database import get_db
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from fastapi.responses import RedirectResponse
-from services.auth import AuthService
 from core.discord_config import is_discord_configured
+from core.session_cookie import clear_auth_cookie, set_auth_cookie
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import RedirectResponse, Response
+from services.auth import AuthService
 from services.discord_auth import (
     DiscordAuthError,
     build_discord_authorize_url,
@@ -20,7 +21,6 @@ logger = logging.getLogger(__name__)
 
 @router.get("/login")
 async def discord_login(db: AsyncSession = Depends(get_db)):
-    """Redirect to Discord OAuth2 authorize URL."""
     if not is_discord_configured():
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -41,7 +41,6 @@ async def discord_callback(
     error: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
-    """Handle Discord OAuth callback, issue JWT, redirect to frontend."""
     if error:
         return RedirectResponse(
             url=build_frontend_error_redirect(f"Discord 로그인 거부: {error}"),
@@ -63,8 +62,10 @@ async def discord_callback(
         )
 
     try:
-        redirect_url = await complete_discord_login(db, code)
-        return RedirectResponse(url=redirect_url, status_code=status.HTTP_302_FOUND)
+        result = await complete_discord_login(db, code)
+        response = RedirectResponse(url=result.redirect_url, status_code=status.HTTP_302_FOUND)
+        set_auth_cookie(response, result.token, result.expires_at)
+        return response
     except DiscordAuthError as exc:
         logger.warning("[discord] callback failed: %s", exc.message)
         return RedirectResponse(

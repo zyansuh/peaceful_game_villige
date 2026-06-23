@@ -16,12 +16,14 @@ from core.auth import (
 )
 from core.config import settings
 from core.database import get_db
+from core.session_cookie import clear_auth_cookie
 from dependencies.auth import get_current_user
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import RedirectResponse
 from models.auth import User
 from pydantic import BaseModel
 from schemas.auth import (
+    AuthStatusResponse,
     PlatformTokenExchangeRequest,
     TokenExchangeResponse,
     UserResponse,
@@ -315,8 +317,20 @@ async def get_current_user_info(current_user: UserResponse = Depends(get_current
     return current_user
 
 
+@router.get("/session", response_model=AuthStatusResponse)
+async def get_session(current_user: UserResponse = Depends(get_current_user)):
+    return AuthStatusResponse(authenticated=True, user=current_user)
+
+
+@router.post("/logout")
+async def logout_session(response: Response):
+    """Clear HttpOnly session cookie."""
+    clear_auth_cookie(response)
+    return {"message": "logged out"}
+
+
 @router.get("/logout")
-async def logout():
-    """Logout user."""
+async def logout_oidc():
+    """Legacy OIDC logout redirect."""
     logout_url = build_logout_url()
     return {"redirect_url": logout_url}

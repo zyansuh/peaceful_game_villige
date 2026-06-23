@@ -88,6 +88,7 @@ class UserService:
             raise ValueError("User not found")
 
         user.name = cleaned
+        user.nickname_configured = True
         await db.commit()
         await db.refresh(user)
         logger.info("Updated nickname for user %s", user_id)

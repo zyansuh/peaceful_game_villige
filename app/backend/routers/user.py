@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from core.database import get_db
-from dependencies.auth import get_admin_user, get_current_user, get_staff_user
+from dependencies.auth import get_admin_user, get_current_user, get_staff_user, user_model_to_response
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, field_validator
 from schemas.auth import UserResponse
@@ -43,15 +43,7 @@ class UserListResponse(BaseModel):
 
 
 def user_to_response(user) -> UserResponse:
-    return UserResponse(
-        id=user.id,
-        email=user.email,
-        name=user.name,
-        discord_username=getattr(user, "discord_username", None),
-        role=user.role,
-        last_login=user.last_login,
-        created_at=user.created_at,
-    )
+    return user_model_to_response(user)
 
 
 @router.get("/profile", response_model=UserResponse)
@@ -135,4 +127,21 @@ async def update_user_role(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
     if not updated:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return user_to_response(updated)
+
+
+@router.patch("/staff/{user_id}/nickname", response_model=UserResponse)
+async def admin_update_nickname(
+    user_id: str,
+    body: UpdateNicknameRequest,
+    db: AsyncSession = Depends(get_db),
+    _admin: UserResponse = Depends(get_admin_user),
+):
+    """Admin: change any member's site nickname."""
+    try:
+        updated = await UserService.update_nickname(db, user_id, body.nickname)
+    except NicknameValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     return user_to_response(updated)

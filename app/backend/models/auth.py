@@ -1,5 +1,5 @@
 from models.base import Base
-from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from sqlalchemy.sql import func
 
 
@@ -9,8 +9,10 @@ class User(Base):
     id = Column(String(255), primary_key=True, index=True)  # Discord user ID
     email = Column(String(255), nullable=False)
     name = Column(String(255), nullable=True)  # 사이트 표시 닉네임
-    discord_username = Column(String(255), nullable=True)  # Discord @username
-    role = Column(String(50), default="user", nullable=False)  # user | teacher | admin
+    discord_username = Column(String(255), nullable=True)
+    discord_avatar = Column(String(512), nullable=True)
+    nickname_configured = Column(Boolean, default=False, nullable=False)
+    role = Column(String(50), default="user", nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     last_login = Column(DateTime(timezone=True), nullable=True)
 

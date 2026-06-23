@@ -33,6 +33,9 @@ def quiet_noisy_loggers() -> None:
 
 def ensure_local_dev_env() -> None:
     """Set safe defaults for local SQLite dev when JWT env is missing."""
+    if os.environ.get("JWT_SECRET") and not os.environ.get("JWT_SECRET_KEY"):
+        os.environ["JWT_SECRET_KEY"] = os.environ["JWT_SECRET"]
+
     if os.environ.get("JWT_SECRET_KEY"):
         return
     db_url = os.environ.get("DATABASE_URL", "sqlite:///./gamema.db")

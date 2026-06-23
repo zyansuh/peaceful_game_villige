@@ -1,6 +1,7 @@
 import logging
+from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from urllib.parse import urlencode
 
 import httpx
@@ -24,13 +25,20 @@ logger = logging.getLogger(__name__)
 DISCORD_API = "https://discord.com/api"
 DISCORD_AUTHORIZE = "https://discord.com/api/oauth2/authorize"
 DISCORD_TOKEN = f"{DISCORD_API}/oauth2/token"
-DISCORD_SCOPES = "identify guilds"
+DISCORD_SCOPES = "identify guilds email"
 
 
 class DiscordAuthError(Exception):
     def __init__(self, message: str):
         self.message = message
         super().__init__(message)
+
+
+@dataclass
+class DiscordLoginResult:
+    redirect_url: str
+    token: str
+    expires_at: datetime
 
 
 def build_discord_authorize_url(state: str) -> str:
@@ -51,8 +59,21 @@ def build_frontend_error_redirect(message: str) -> str:
     return f"{get_frontend_url()}/login?{urlencode({'error': message})}"
 
 
-def build_frontend_success_redirect(token: str, expires_at: int) -> str:
-    return f"{get_frontend_url()}/auth/callback?{urlencode({'token': token, 'expires_at': str(expires_at)})}"
+def discord_avatar_url(profile: Dict[str, Any]) -> str:
+    user_id = str(profile["id"])
+    avatar = profile.get("avatar")
+    if avatar:
+        ext = "gif" if str(avatar).startswith("a_") else "png"
+        return f"https://cdn.discordapp.com/avatars/{user_id}/{avatar}.{ext}?size=128"
+    index = (int(user_id) >> 22) % 6
+    return f"https://cdn.discordapp.com/embed/avatars/{index}.png"
+
+
+def discord_email(profile: Dict[str, Any]) -> str:
+    email = (profile.get("email") or "").strip()
+    if email:
+        return email
+    return f"{profile['id']}@discord.local"
 
 
 async def exchange_code_for_token(code: str) -> Dict[str, Any]:
@@ -110,44 +131,37 @@ async def ensure_user_in_required_guild(access_token: str) -> None:
         raise DiscordAuthError("지정된 Discord 서버에 가입된 계정만 로그인할 수 있습니다.")
 
 
-def discord_display_name(profile: Dict[str, Any]) -> str:
-    global_name = (profile.get("global_name") or "").strip()
-    username = (profile.get("username") or "user").strip()
-    return global_name or username
-
-
-def discord_tag(profile: Dict[str, Any]) -> str:
-    username = (profile.get("username") or "user").strip()
-    return username
-
-
-async def get_or_create_discord_user(db: AsyncSession, profile: Dict[str, Any]) -> User:
+async def get_or_create_discord_user(db: AsyncSession, profile: Dict[str, Any]) -> tuple[User, bool]:
+    """Returns (user, is_new_user)."""
     discord_id = str(profile["id"])
-    display = discord_display_name(profile)
-    tag = discord_tag(profile)
-    email = f"{discord_id}@discord.local"
+    tag = (profile.get("username") or "user").strip()
+    email = discord_email(profile)
+    avatar = discord_avatar_url(profile)
 
     result = await db.execute(select(User).where(User.id == discord_id))
     user = result.scalar_one_or_none()
+    is_new = user is None
 
     if user:
         user.discord_username = tag
+        user.email = email
+        user.discord_avatar = avatar
         user.last_login = datetime.now(timezone.utc)
-        if not user.name:
-            user.name = display
     else:
         user = User(
             id=discord_id,
             email=email,
-            name=display,
+            name=None,
             discord_username=tag,
+            discord_avatar=avatar,
+            nickname_configured=False,
             last_login=datetime.now(timezone.utc),
         )
         db.add(user)
 
     await db.commit()
     await db.refresh(user)
-    return user
+    return user, is_new
 
 
 async def apply_discord_role_bootstrap(db: AsyncSession, user: User) -> User:
@@ -165,7 +179,14 @@ async def apply_discord_role_bootstrap(db: AsyncSession, user: User) -> User:
     return user
 
 
-async def complete_discord_login(db: AsyncSession, code: str) -> str:
+def build_post_login_redirect(user: User) -> str:
+    base = get_frontend_url()
+    if not user.nickname_configured or not user.name:
+        return f"{base}/setup-nickname"
+    return f"{base}/auth/callback"
+
+
+async def complete_discord_login(db: AsyncSession, code: str) -> DiscordLoginResult:
     if not is_discord_configured():
         raise DiscordAuthError("Discord OAuth가 설정되지 않았습니다.")
 
@@ -177,9 +198,10 @@ async def complete_discord_login(db: AsyncSession, code: str) -> str:
     await ensure_user_in_required_guild(access_token)
     profile = await fetch_discord_user(access_token)
 
-    user = await get_or_create_discord_user(db, profile)
+    user, _is_new = await get_or_create_discord_user(db, profile)
     user = await apply_discord_role_bootstrap(db, user)
 
     auth_service = AuthService(db)
     app_token, expires_at, _ = await auth_service.issue_app_token(user=user)
-    return build_frontend_success_redirect(app_token, int(expires_at.timestamp()))
+    redirect_url = build_post_login_redirect(user)
+    return DiscordLoginResult(redirect_url=redirect_url, token=app_token, expires_at=expires_at)

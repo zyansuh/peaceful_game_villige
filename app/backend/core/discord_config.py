@@ -19,16 +19,16 @@ def get_discord_guild_id() -> str:
     return os.environ.get("DISCORD_GUILD_ID", "").strip()
 
 
+def get_frontend_url() -> str:
+    return os.environ.get("FRONTEND_URL", "http://localhost:3000").rstrip("/")
+
+
 def get_discord_redirect_uri() -> str:
     explicit = os.environ.get("DISCORD_REDIRECT_URI", "").strip()
     if explicit:
         return explicit
-    backend = os.environ.get("PYTHON_BACKEND_URL", "http://127.0.0.1:8000")
-    return f"{backend.rstrip('/')}/api/v1/auth/discord/callback"
-
-
-def get_frontend_url() -> str:
-    return os.environ.get("FRONTEND_URL", "http://localhost:3000").rstrip("/")
+    # Vite proxy: browser와 쿠키 도메인 일치 (localhost:3000)
+    return f"{get_frontend_url()}/api/v1/auth/discord/callback"
 
 
 def is_guild_check_enabled() -> bool:

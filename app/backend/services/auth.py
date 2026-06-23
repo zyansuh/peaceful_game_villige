@@ -83,6 +83,9 @@ class AuthService:
             claims["name"] = user.name
         if getattr(user, "discord_username", None):
             claims["discord_username"] = user.discord_username
+        if getattr(user, "discord_avatar", None):
+            claims["discord_avatar"] = user.discord_avatar
+        claims["nickname_configured"] = bool(getattr(user, "nickname_configured", False))
         if user.last_login:
             claims["last_login"] = user.last_login.isoformat()
         token = create_access_token(claims, expires_minutes=expires_minutes)
