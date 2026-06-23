@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Clock, CheckCircle, XCircle, User, RefreshCw, Ban, Star, ClipboardList, BookOpen, Gamepad2 } from 'lucide-react';
 import client from '@/lib/client';
+import { fetchCurrentUser } from '@/lib/api/auth-session';
 import ProfileNicknameCard from '@/components/member/ProfileNicknameCard';
 
 interface Application {
@@ -74,19 +75,23 @@ export default function MyPage() {
 
   const fetchData = async () => {
     try {
-      let userRes;
+      let userData;
       try {
-        userRes = await client.auth.me();
+        userData = await fetchCurrentUser();
       } catch {
         window.location.href = '/login';
         return;
       }
-      if (!userRes?.data) {
+      if (!userData) {
         window.location.href = '/login';
         return;
       }
-      setProfileName(userRes.data.name || '');
-      setDiscordUsername(userRes.data.discord_username);
+      if (!userData.nickname_configured || !userData.name) {
+        navigate('/setup-nickname', { replace: true });
+        return;
+      }
+      setProfileName(userData.name || '');
+      setDiscordUsername(userData.discord_username);
 
       // Fetch user's applications
       let appList: Application[] = [];

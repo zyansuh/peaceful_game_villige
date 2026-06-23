@@ -1,3 +1,6 @@
+import { apiFetch } from '@/lib/api/auth-session';
+import type { AuthUser } from '@/types/auth';
+
 export interface StaffUser {
   id: string;
   email: string;
@@ -6,29 +9,26 @@ export interface StaffUser {
   last_login?: string;
 }
 
+interface UserListResponse {
+  items: StaffUser[];
+  total: number;
+}
+
 export async function fetchStaffUsers(): Promise<StaffUser[]> {
-  const client = (await import('@/lib/client')).default;
-  const res = await client.apiCall.invoke({
-    url: '/api/v1/users/staff',
-    method: 'GET',
-    data: {},
-  });
-  return res?.data?.items || [];
+  const res = await apiFetch<UserListResponse>('/api/v1/users/staff');
+  return res?.items || [];
 }
 
 export async function updateUserRole(userId: string, role: string): Promise<StaffUser> {
-  const client = (await import('@/lib/client')).default;
-  try {
-    const res = await client.apiCall.invoke({
-      url: `/api/v1/users/staff/${encodeURIComponent(userId)}/role`,
-      method: 'PATCH',
-      data: { role },
-    });
-    return res.data;
-  } catch (err: unknown) {
-    const message =
-      (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ||
-      '권한 변경에 실패했습니다.';
-    throw new Error(message);
-  }
+  return apiFetch<StaffUser>(`/api/v1/users/staff/${encodeURIComponent(userId)}/role`, {
+    method: 'PATCH',
+    body: JSON.stringify({ role }),
+  });
+}
+
+export async function adminUpdateNickname(userId: string, nickname: string): Promise<AuthUser> {
+  return apiFetch<AuthUser>(`/api/v1/users/staff/${encodeURIComponent(userId)}/nickname`, {
+    method: 'PATCH',
+    body: JSON.stringify({ nickname: nickname.trim() }),
+  });
 }

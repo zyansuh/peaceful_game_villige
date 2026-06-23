@@ -7,20 +7,13 @@ import React, {
 } from 'react';
 import { isAdminRole, isStaffRole } from '@/constants/admin-permissions';
 import { authApi } from '@/lib/api/auth';
-
-interface User {
-  id: string;
-  email: string;
-  name?: string;
-  role: string;
-  last_login?: string;
-}
+import type { AuthUser } from '@/types/auth';
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   loading: boolean;
   error: string | null;
-  login: () => Promise<void>;
+  login: () => void;
   logout: () => Promise<void>;
   refetch: () => Promise<void>;
   isAdmin: boolean;
@@ -42,7 +35,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,21 +53,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const login = async () => {
-    try {
-      setError(null);
-      await authApi.login();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
-    }
+  const login = () => {
+    setError(null);
+    authApi.login();
   };
 
   const logout = async () => {
     try {
       setError(null);
       await authApi.logout();
+      setUser(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Logout failed');
+      throw err;
     }
   };
 

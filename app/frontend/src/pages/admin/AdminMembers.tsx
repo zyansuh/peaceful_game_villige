@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Loader2, UserCircle } from 'lucide-react';
+import { Check, Loader2, Pencil, UserCircle, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import PageHeader from '@/components/common/PageHeader';
 import { useToast } from '@/hooks/use-toast';
+import { adminUpdateNickname } from '@/lib/api/users-admin';
 import {
   fetchMemberDirectory,
   roleLabel,
@@ -27,8 +30,12 @@ export default function AdminMembers() {
   const { toast } = useToast();
   const [members, setMembers] = useState<DirectoryMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const [savingId, setSavingId] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadMembers = () => {
+    setLoading(true);
     fetchMemberDirectory()
       .then(setMembers)
       .catch((err) => {
@@ -40,7 +47,46 @@ export default function AdminMembers() {
         });
       })
       .finally(() => setLoading(false));
-  }, [toast]);
+  };
+
+  useEffect(() => {
+    loadMembers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const startEdit = (m: DirectoryMember) => {
+    setEditingId(m.id);
+    setEditValue(m.name || '');
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditValue('');
+  };
+
+  const saveNickname = async (userId: string) => {
+    setSavingId(userId);
+    try {
+      const updated = await adminUpdateNickname(userId, editValue);
+      setMembers((prev) =>
+        prev.map((m) =>
+          m.id === userId
+            ? { ...m, name: updated.name, nickname_configured: updated.nickname_configured }
+            : m
+        )
+      );
+      setEditingId(null);
+      toast({ title: '닉네임이 변경되었습니다.' });
+    } catch (err) {
+      toast({
+        variant: 'destructive',
+        title: '변경 실패',
+        description: err instanceof Error ? err.message : '다시 시도해주세요.',
+      });
+    } finally {
+      setSavingId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -67,7 +113,7 @@ export default function AdminMembers() {
             안내
           </p>
           <p className="text-xs sm:text-sm">
-            Discord로 로그인한 회원 목록입니다. 사이트 닉네임은 마이페이지에서 변경할 수 있습니다.
+            Discord로 로그인한 회원 목록입니다. 관리자는 아래에서 사이트 닉네임을 변경할 수 있습니다.
           </p>
         </CardContent>
       </Card>
@@ -80,19 +126,37 @@ export default function AdminMembers() {
         </Card>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-800">
-          <table className="w-full text-sm text-left min-w-[640px]">
+          <table className="w-full text-sm text-left min-w-[720px]">
             <thead className="bg-gray-900/80 text-gray-400 text-xs uppercase">
               <tr>
                 <th className="px-4 py-3 font-medium">사이트 닉네임</th>
                 <th className="px-4 py-3 font-medium">Discord</th>
                 <th className="px-4 py-3 font-medium hidden md:table-cell">권한</th>
                 <th className="px-4 py-3 font-medium">가입/로그인</th>
+                <th className="px-4 py-3 font-medium w-24">관리</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800 bg-gray-900/40">
               {members.map((m) => (
                 <tr key={m.id} className="hover:bg-gray-800/40">
-                  <td className="px-4 py-3 text-white font-medium">{m.name || '(미설정)'}</td>
+                  <td className="px-4 py-3 text-white font-medium">
+                    {editingId === m.id ? (
+                      <Input
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        maxLength={20}
+                        className="h-8 bg-gray-800 border-gray-700 text-white text-sm max-w-[160px]"
+                        autoFocus
+                      />
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        {m.discord_avatar && (
+                          <img src={m.discord_avatar} alt="" className="h-6 w-6 rounded-full" />
+                        )}
+                        {m.name || '(미설정)'}
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-gray-400 text-xs">{m.discord_username || m.id}</td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     <Badge variant="outline" className="border-gray-600 text-gray-300 text-xs font-normal">
@@ -101,6 +165,47 @@ export default function AdminMembers() {
                   </td>
                   <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
                     {formatDate(m.last_login || m.created_at)}
+                  </td>
+                  <td className="px-4 py-3">
+                    {editingId === m.id ? (
+                      <div className="flex gap-1">
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-green-400"
+                          disabled={savingId === m.id || !editValue.trim()}
+                          onClick={() => saveNickname(m.id)}
+                        >
+                          {savingId === m.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Check className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-gray-400"
+                          disabled={savingId === m.id}
+                          onClick={cancelEdit}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-gray-500 hover:text-white"
+                        onClick={() => startEdit(m)}
+                        aria-label="닉네임 수정"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    )}
                   </td>
                 </tr>
               ))}

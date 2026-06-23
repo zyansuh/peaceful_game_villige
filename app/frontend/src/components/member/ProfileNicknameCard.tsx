@@ -29,9 +29,7 @@ export default function ProfileNicknameCard({
       onUpdated(newName);
       toast({ title: '닉네임이 변경되었습니다.' });
     } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ||
-        '닉네임 변경에 실패했습니다.';
+      const message = err instanceof Error ? err.message : '닉네임 변경에 실패했습니다.';
       toast({ variant: 'destructive', title: '변경 실패', description: message });
     } finally {
       setSaving(false);

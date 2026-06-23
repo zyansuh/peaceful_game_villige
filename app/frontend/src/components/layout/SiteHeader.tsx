@@ -4,7 +4,6 @@ import {
   Menu,
   Home,
   UserCircle,
-  Shield,
   LogIn,
   LogOut,
   X,
@@ -21,7 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 
 interface SiteHeaderProps {
-  user: { name?: string; email?: string } | null;
+  user: { name?: string; email?: string; discord_avatar?: string } | null;
   onLogout: () => void;
 }
 
@@ -51,7 +50,6 @@ export default function SiteHeader({ user, onLogout }: SiteHeaderProps) {
           </span>
         </Link>
 
-        {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-2 shrink-0">
           <Link to="/graduation-interview">
             <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white gap-1.5">
@@ -62,16 +60,12 @@ export default function SiteHeader({ user, onLogout }: SiteHeaderProps) {
           {user && (
             <Link to="/mypage">
               <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white gap-1.5">
-                <UserCircle className="h-4 w-4" />
-                마이페이지
-              </Button>
-            </Link>
-          )}
-          {user && (
-            <Link to="/admin">
-              <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white gap-1.5">
-                <Shield className="h-4 w-4" />
-                관리자
+                {user.discord_avatar ? (
+                  <img src={user.discord_avatar} alt="" className="h-5 w-5 rounded-full" />
+                ) : (
+                  <UserCircle className="h-4 w-4" />
+                )}
+                {user.name || '마이페이지'}
               </Button>
             </Link>
           )}
@@ -97,7 +91,6 @@ export default function SiteHeader({ user, onLogout }: SiteHeaderProps) {
           )}
         </div>
 
-        {/* Mobile menu */}
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild className="md:hidden">
             <Button
@@ -131,12 +124,6 @@ export default function SiteHeader({ user, onLogout }: SiteHeaderProps) {
                 <Link to="/mypage" className={navLinkClass} onClick={() => setOpen(false)}>
                   <UserCircle className="h-4 w-4 text-cyan-400" />
                   마이페이지
-                </Link>
-              )}
-              {user && (
-                <Link to="/admin" className={navLinkClass} onClick={() => setOpen(false)}>
-                  <Shield className="h-4 w-4 text-amber-400" />
-                  관리자
                 </Link>
               )}
               <div className="my-2 border-t border-gray-800" />

@@ -17,6 +17,7 @@ import AdminRoles from "@/pages/admin/AdminRoles";
 import AdminMembers from "@/pages/admin/AdminMembers";
 import AuthCallback from "@/pages/auth/AuthCallback";
 import Login from "@/pages/auth/Login";
+import SetupNickname from "@/pages/auth/SetupNickname";
 import InterviewComplete from "@/pages/interview/InterviewComplete";
 
 function App() {
@@ -41,6 +42,7 @@ function App() {
           <Route path="/mypage" element={<Layout><MyPage /></Layout>} />
           <Route path="/graduation-interview" element={<Layout><GraduationInterview /></Layout>} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/setup-nickname" element={<Layout><SetupNickname /></Layout>} />
           <Route path="/login" element={<Layout><Login /></Layout>} />
           <Route path="/signup" element={<Navigate to="/login" replace />} />
           <Route path="/signup-complete" element={<Navigate to="/login" replace />} />
