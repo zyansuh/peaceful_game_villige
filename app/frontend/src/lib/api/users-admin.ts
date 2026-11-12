@@ -5,6 +5,11 @@ export interface StaffUser {
   id: string;
   email: string;
   name?: string;
+  discord_username?: string;
+  discord_global_name?: string;
+  discord_guild_nickname?: string;
+  display_name?: string;
+  nickname_configured?: boolean;
   role: string;
   last_login?: string;
 }
@@ -30,5 +35,11 @@ export async function adminUpdateNickname(userId: string, nickname: string): Pro
   return apiFetch<AuthUser>(`/api/v1/users/staff/${encodeURIComponent(userId)}/nickname`, {
     method: 'PATCH',
     body: JSON.stringify({ nickname: nickname.trim() }),
+  });
+}
+
+export async function adminClearNickname(userId: string): Promise<AuthUser> {
+  return apiFetch<AuthUser>(`/api/v1/users/staff/${encodeURIComponent(userId)}/nickname`, {
+    method: 'DELETE',
   });
 }
