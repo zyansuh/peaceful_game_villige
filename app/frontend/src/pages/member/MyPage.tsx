@@ -90,7 +90,14 @@ export default function MyPage() {
         navigate('/setup-nickname', { replace: true });
         return;
       }
-      setProfileName(userData.name || '');
+      setProfileName(
+        userData.display_name ||
+          userData.name ||
+          userData.discord_guild_nickname ||
+          userData.discord_global_name ||
+          userData.discord_username ||
+          ''
+      );
       setDiscordUsername(userData.discord_username);
 
       // Fetch user's applications

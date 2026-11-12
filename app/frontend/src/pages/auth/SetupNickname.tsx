@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { updateNickname } from '@/lib/api/profile';
+import { getNicknamePrefill } from '@/lib/nickname';
 
 export default function SetupNickname() {
   const navigate = useNavigate();
@@ -25,7 +26,8 @@ export default function SetupNickname() {
       navigate('/mypage', { replace: true });
       return;
     }
-    setNickname(user.name || user.discord_username || '');
+    // 평겜마 서버 닉 → global_name → username 순으로 프리필
+    setNickname(getNicknamePrefill(user));
   }, [user, loading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -75,11 +77,11 @@ export default function SetupNickname() {
                 />
               </div>
             )}
-            {user.discord_username && (
-              <p className="text-center text-xs text-gray-500">
-                Discord: {user.discord_username}
-              </p>
-            )}
+            <p className="text-center text-xs text-gray-500 space-y-0.5">
+              {user.discord_guild_nickname && <span className="block">서버: {user.discord_guild_nickname}</span>}
+              {user.discord_global_name && <span className="block">표시: {user.discord_global_name}</span>}
+              {user.discord_username && <span className="block">@{user.discord_username}</span>}
+            </p>
             <div className="space-y-2">
               <Label htmlFor="setup-nickname" className="text-gray-300">
                 사이트 닉네임

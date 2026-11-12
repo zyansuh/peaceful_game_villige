@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import SpaceBackground from '@/components/layout/SpaceBackground';
 import SiteHeader from '@/components/layout/SiteHeader';
+import { getDisplayNickname } from '@/lib/nickname';
 
 interface LayoutProps {
   children: ReactNode;
@@ -25,7 +26,15 @@ export default function Layout({ children }: LayoutProps) {
     <div className="min-h-screen bg-gray-950 text-white relative flex flex-col">
       <SpaceBackground />
       <SiteHeader
-        user={user ? { name: user.name, email: user.email, discord_avatar: user.discord_avatar } : null}
+        user={
+          user
+            ? {
+                name: getDisplayNickname(user),
+                email: user.email,
+                discord_avatar: user.discord_avatar,
+              }
+            : null
+        }
         onLogout={handleLogout}
       />
       <main className="relative z-10 min-w-0 flex-1">{children}</main>
