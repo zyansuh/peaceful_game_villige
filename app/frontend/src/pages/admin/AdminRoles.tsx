@@ -114,7 +114,9 @@ export default function AdminRoles() {
           <Card key={u.id} className="bg-gray-900 border-gray-800">
             <CardContent className="card-pad flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-white font-medium truncate">{u.name || u.email}</p>
+                <p className="text-white font-medium truncate">
+                  {u.display_name || u.name || u.email}
+                </p>
                 <p className="text-xs text-gray-500 truncate">
                   Discord ID: {u.id.slice(0, 8)}… · {ROLE_LABELS[u.role] || u.role}
                 </p>

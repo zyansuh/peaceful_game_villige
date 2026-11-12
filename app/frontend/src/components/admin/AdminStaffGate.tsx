@@ -63,7 +63,7 @@ export default function AdminStaffGate({ children }: AdminStaffGateProps) {
             </p>
             <div className="rounded-lg bg-gray-800/80 px-3 py-2 text-sm flex items-center justify-center gap-2 text-gray-300">
               <UserCircle className="h-4 w-4 shrink-0" />
-              <span className="truncate">{user.name || user.email}</span>
+              <span className="truncate">{user.display_name || user.name || user.email}</span>
               <span className="text-gray-500">·</span>
               <span>{ROLE_LABELS[user.role] || user.role}</span>
             </div>

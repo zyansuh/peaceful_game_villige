@@ -32,6 +32,8 @@ import {
   adminDeleteGraduationInterview,
   adminUpdateGraduationInterview,
 } from '@/lib/api/admin-entities';
+import { fetchMemberDirectory } from '@/lib/api/members-admin';
+import { getDisplayNickname } from '@/lib/nickname';
 
 interface Interview {
   id: number;
@@ -44,11 +46,6 @@ interface Interview {
   answer3: string;
   created_at: string;
   member_nickname?: string;
-}
-
-interface Member {
-  id: number;
-  username: string;
 }
 
 function getClassColor(className: string): { bg: string; text: string; border: string; label: string } {
@@ -136,24 +133,21 @@ export default function AdminInterviews() {
         const items = res?.data?.items || res?.data || [];
         const interviewList: Interview[] = Array.isArray(items) ? items : [];
 
-        // Fetch all members to map user_id -> nickname
+        // Discord users directory → display nickname (admin/guild/global/username)
         try {
-          const membersRes = await client.entities.members.queryAll({ query: {}, limit: 2000 });
-          const memberItems = membersRes?.data?.items || membersRes?.data || [];
-          const members: Member[] = Array.isArray(memberItems) ? memberItems : [];
+          const directory = await fetchMemberDirectory();
           const memberMap = new Map<string, string>();
-          members.forEach((m) => {
-            memberMap.set(String(m.id), m.username);
+          directory.forEach((m) => {
+            memberMap.set(String(m.id), getDisplayNickname(m));
           });
 
-          // Attach nickname to each interview
           interviewList.forEach((interview) => {
             if (interview.user_id) {
               interview.member_nickname = memberMap.get(String(interview.user_id)) || undefined;
             }
           });
         } catch (memberErr) {
-          console.error('Failed to load members:', memberErr);
+          console.error('Failed to load user directory:', memberErr);
         }
 
         setInterviews(interviewList);

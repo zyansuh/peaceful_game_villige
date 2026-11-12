@@ -26,13 +26,17 @@ import {
   updateTeacherStatus,
 } from '@/lib/api/teachers-admin';
 import type { AdminTeacher } from '@/utils/teacher/teacher-form';
+import { fetchMemberDirectory } from '@/lib/api/members-admin';
+import { getDisplayNickname } from '@/lib/nickname';
 
 interface AssignedApplication {
   id: number;
   nickname: string;
+  discord_id?: string;
   teacher_id: number;
   status: string;
   created_at: string;
+  display_nickname?: string;
 }
 
 type ClassFilter = '전체' | '수달반' | '사자반' | '여우반';
@@ -76,13 +80,27 @@ export default function AdminTeachers() {
 
   const fetchApplications = async () => {
     try {
-      const res = await client.entities.applications.queryAll({
-        query: {},
-        limit: 2000,
-        sort: '-created_at',
-      });
+      const [res, directory] = await Promise.all([
+        client.entities.applications.queryAll({
+          query: {},
+          limit: 2000,
+          sort: '-created_at',
+        }),
+        fetchMemberDirectory().catch(() => []),
+      ]);
       const items = res?.data?.items || res?.data || [];
-      setApplications(Array.isArray(items) ? items : []);
+      const list: AssignedApplication[] = Array.isArray(items) ? items : [];
+      const nameByDiscordId = new Map(
+        directory.map((u) => [String(u.id), getDisplayNickname(u)] as const)
+      );
+      setApplications(
+        list.map((app) => ({
+          ...app,
+          display_nickname:
+            (app.discord_id && nameByDiscordId.get(String(app.discord_id))) ||
+            app.nickname,
+        }))
+      );
     } catch (err) {
       console.error('Failed to load applications:', err);
       setApplications([]);
@@ -283,7 +301,8 @@ export default function AdminTeachers() {
                                     className="flex items-center justify-between gap-3 rounded-md bg-gray-900/80 px-3 py-2 text-sm"
                                   >
                                     <span className="text-white font-medium truncate">
-                                      {index + 1}. {student.nickname || '닉네임 없음'}
+                                      {index + 1}.{' '}
+                                      {student.display_nickname || student.nickname || '닉네임 없음'}
                                     </span>
                                     <span className="text-gray-500 text-xs shrink-0">
                                       {student.created_at
