@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from core.database import get_db
 from dependencies.auth import get_admin_user, get_current_user, get_staff_user, user_model_to_response
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, field_validator
 from schemas.auth import UserResponse
 from services.user import NicknameValidationError, UserService, validate_nickname
@@ -90,11 +90,12 @@ async def update_nickname(
 
 @router.get("/directory", response_model=UserListResponse)
 async def list_member_directory(
+    q: Optional[str] = Query(None, description="Search custom/guild/global/username"),
     db: AsyncSession = Depends(get_db),
     _staff: UserResponse = Depends(get_staff_user),
 ):
     """Staff-only list of Discord-registered site members."""
-    users = await UserService.list_users(db, limit=2000)
+    users = await UserService.list_users(db, limit=2000, search=q)
     items = [user_to_response(u) for u in users]
     return UserListResponse(items=items, total=len(items))
 
@@ -137,11 +138,25 @@ async def admin_update_nickname(
     db: AsyncSession = Depends(get_db),
     _admin: UserResponse = Depends(get_admin_user),
 ):
-    """Admin: change any member's site nickname."""
+    """Admin: set custom nickname (survives Discord sync)."""
     try:
         updated = await UserService.update_nickname(db, user_id, body.nickname)
     except NicknameValidationError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
+    return user_to_response(updated)
+
+
+@router.delete("/staff/{user_id}/nickname", response_model=UserResponse)
+async def admin_clear_nickname(
+    user_id: str,
+    db: AsyncSession = Depends(get_db),
+    _admin: UserResponse = Depends(get_admin_user),
+):
+    """Admin: clear custom nickname → fall back to guild/global/username."""
+    try:
+        updated = await UserService.clear_custom_nickname(db, user_id)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     return user_to_response(updated)

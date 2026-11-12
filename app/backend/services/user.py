@@ -4,7 +4,7 @@ import time
 from typing import List, Optional
 
 from models.auth import User
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
@@ -43,10 +43,25 @@ class UserService:
         return user
 
     @staticmethod
-    async def list_users(db: AsyncSession, skip: int = 0, limit: int = 200) -> List[User]:
-        result = await db.execute(
-            select(User).order_by(User.created_at.desc()).offset(skip).limit(limit)
-        )
+    async def list_users(
+        db: AsyncSession,
+        skip: int = 0,
+        limit: int = 200,
+        search: Optional[str] = None,
+    ) -> List[User]:
+        query = select(User)
+        if search and search.strip():
+            term = f"%{search.strip().lower()}%"
+            query = query.where(
+                or_(
+                    func.lower(User.name).like(term),
+                    func.lower(User.discord_guild_nickname).like(term),
+                    func.lower(User.discord_global_name).like(term),
+                    func.lower(User.discord_username).like(term),
+                    func.lower(User.id).like(term),
+                )
+            )
+        result = await db.execute(query.order_by(User.created_at.desc()).offset(skip).limit(limit))
         return list(result.scalars().all())
 
     @staticmethod
@@ -70,14 +85,23 @@ class UserService:
     @staticmethod
     async def update_user_profile(db: AsyncSession, user_id: str, name: Optional[str] = None) -> Optional[User]:
         """Update user profile display name."""
-        return await UserService.update_nickname(db, user_id, name) if name is not None else await UserService.get_user_profile(db, user_id)
+        return (
+            await UserService.update_nickname(db, user_id, name)
+            if name is not None
+            else await UserService.get_user_profile(db, user_id)
+        )
 
     @staticmethod
     async def update_nickname(db: AsyncSession, user_id: str, nickname: str) -> User:
+        """Set custom site nickname (admin or self). Preserved across Discord sync."""
         cleaned = validate_nickname(nickname)
 
         dup = await db.execute(
-            select(User).where(func.lower(User.name) == cleaned.lower(), User.id != user_id)
+            select(User).where(
+                func.lower(User.name) == cleaned.lower(),
+                User.nickname_configured.is_(True),
+                User.id != user_id,
+            )
         )
         if dup.scalar_one_or_none():
             raise NicknameValidationError("이미 사용 중인 닉네임입니다.")
@@ -91,5 +115,20 @@ class UserService:
         user.nickname_configured = True
         await db.commit()
         await db.refresh(user)
-        logger.info("Updated nickname for user %s", user_id)
+        logger.info("Updated custom nickname for user %s", user_id)
+        return user
+
+    @staticmethod
+    async def clear_custom_nickname(db: AsyncSession, user_id: str) -> User:
+        """Clear admin/user custom nickname → fall back to guild/global/username."""
+        result = await db.execute(select(User).where(User.id == user_id))
+        user = result.scalar_one_or_none()
+        if not user:
+            raise ValueError("User not found")
+
+        user.name = None
+        user.nickname_configured = False
+        await db.commit()
+        await db.refresh(user)
+        logger.info("Cleared custom nickname for user %s", user_id)
         return user
