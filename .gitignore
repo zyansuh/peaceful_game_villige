@@ -9,4 +9,5 @@ vite.config.ts.timestamp-*
 # Backend local
 app/backend/gamema.db
 app/backend/.env
+app/frontend/.env
 app/backend/logs/
