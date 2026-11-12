@@ -9,6 +9,7 @@ from core.session_cookie import AUTH_COOKIE_NAME
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from schemas.auth import UserResponse
+from services.nickname import get_display_nickname, get_display_nickname_from_user
 from services.user import UserService
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -37,8 +38,11 @@ def user_model_to_response(user) -> UserResponse:
         email=user.email,
         name=user.name,
         discord_username=getattr(user, "discord_username", None),
+        discord_global_name=getattr(user, "discord_global_name", None),
+        discord_guild_nickname=getattr(user, "discord_guild_nickname", None),
         discord_avatar=getattr(user, "discord_avatar", None),
         nickname_configured=bool(getattr(user, "nickname_configured", False)),
+        display_name=get_display_nickname_from_user(user),
         role=user.role,
         last_login=user.last_login,
         created_at=user.created_at,
@@ -72,13 +76,23 @@ async def get_current_user(
             user_hash = hashlib.sha256(str(user_id).encode()).hexdigest()[:8] if user_id else "unknown"
             logger.debug("Failed to parse last_login for user hash: %s", user_hash)
 
+    configured = bool(payload.get("nickname_configured"))
     return UserResponse(
         id=str(user_id),
         email=payload.get("email", ""),
         name=payload.get("name"),
         discord_username=payload.get("discord_username"),
+        discord_global_name=payload.get("discord_global_name"),
+        discord_guild_nickname=payload.get("discord_guild_nickname"),
         discord_avatar=payload.get("discord_avatar"),
-        nickname_configured=bool(payload.get("nickname_configured")),
+        nickname_configured=configured,
+        display_name=get_display_nickname(
+            name=payload.get("name"),
+            nickname_configured=configured,
+            discord_guild_nickname=payload.get("discord_guild_nickname"),
+            discord_global_name=payload.get("discord_global_name"),
+            discord_username=payload.get("discord_username"),
+        ),
         role=payload.get("role", "user"),
         last_login=last_login,
     )
