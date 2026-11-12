@@ -8,8 +8,11 @@ class User(Base):
 
     id = Column(String(255), primary_key=True, index=True)  # Discord user ID
     email = Column(String(255), nullable=False)
-    name = Column(String(255), nullable=True)  # 사이트 표시 닉네임
+    # customNickname: 관리자/사용자 지정 사이트 닉네임 (nickname_configured=True 일 때만 1순위)
+    name = Column(String(255), nullable=True)
     discord_username = Column(String(255), nullable=True)
+    discord_global_name = Column(String(255), nullable=True)
+    discord_guild_nickname = Column(String(255), nullable=True)  # 평겜마 서버 nick
     discord_avatar = Column(String(512), nullable=True)
     nickname_configured = Column(Boolean, default=False, nullable=False)
     role = Column(String(50), default="user", nullable=False)
